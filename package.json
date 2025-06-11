@@ -1,0 +1,40 @@
+{
+  "name": "arbitrage-trading",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js",
+    "start": "node dist/index.js | pino-pretty",
+    "dev": "ts-node-dev --respawn src/index.ts | pino-pretty"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.12.1",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.34.0",
+    "@typescript-eslint/parser": "^8.34.0",
+    "esbuild": "^0.25.5",
+    "eslint": "^9.28.0",
+    "eslint-config-prettier": "^10.1.5",
+    "prettier": "^3.5.3",
+    "ts-node-dev": "^2.0.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.3.0",
+    "@pancakeswap/sdk": "^5.8.14",
+    "@pancakeswap/smart-router": "^7.2.5",
+    "@pancakeswap/tokens": "^0.7.5",
+    "dotenv": "^16.5.0",
+    "pino": "^9.7.0",
+    "pino-pretty": "^13.0.0",
+    "viem": "^2.31.0",
+    "zod": "^3.25.58"
+  },
+  "peerDependencies": {
+    "@pancakeswap/v3-sdk": "^3.9.3",
+    "graphql-request": "^5.0.0"
+  }
+}
