@@ -10,6 +10,8 @@ const envSchema = z.object({
   FlashLoadSmartRouterAddress: z.string().startsWith('0x').transform<`0x${string}`>((s: any) => s),
   TOKEN0: z.string(),
   TOKEN1: z.string(),
-  SwapFromAmount: z.bigint(),
+  SwapFromAmount: z.string().transform<bigint>(s => BigInt(s)),
+  THE_GRAPH_KEY: z.string(),
+  RedisUrl: z.string(),
 });
 export default envSchema.parse(process.env);

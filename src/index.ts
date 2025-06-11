@@ -1,15 +1,17 @@
 import env from './env'
 import pino from 'pino'
-import { createPublicClient, defineChain, http, PublicClient } from 'viem'
+import { createPublicClient, createWalletClient, defineChain, http, PublicClient } from 'viem'
 import { bsc, Chain } from 'viem/chains'
 import { findTokenWithSymbol } from './util/token'
 import { Arbitrage } from './arbitrage'
 import { z } from 'zod';
-import { ERC20Token } from '@pancakeswap/sdk'
+import { ERC20Token, Native } from '@pancakeswap/sdk'
 import { OnChainSwapPoolProvider, RedisSwapPoolProvider } from './swap-pool'
 import { privateKeyToAccount } from 'viem/accounts'
+import { bestTradeExactInput } from './swap-pool/trade'
+import { createClient } from 'redis'
 
-const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, FlashLoadSmartRouterAddress } = env
+const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, FlashLoadSmartRouterAddress, THE_GRAPH_KEY, RedisUrl } = env
 
 const logger = pino({ level: PINO_LEVEL })
 
@@ -65,18 +67,51 @@ const chainClient : PublicClient = createPublicClient({
 
 const account = privateKeyToAccount(PRIVATE_KEY);
 
-const swapPoolProvider = new RedisSwapPoolProvider(
-  new OnChainSwapPoolProvider(chainClient)
-)
+const onChainSwapPoolProvider = new OnChainSwapPoolProvider(chainClient, THE_GRAPH_KEY)
+
+async function fundToken() {
+  const testAccountPrivateKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
+  const testClient = createWalletClient({
+    account: privateKeyToAccount(testAccountPrivateKey),
+    chain,
+    transport: http(),
+  })
+  const fromAmount = 20n * 10n**18n
+  await testClient.sendTransaction({
+    to: account.address,
+    value: fromAmount,
+  })
+  const nativeCurrency = Native.onChain(chain.id)
+  await bestTradeExactInput(chain, chainClient, onChainSwapPoolProvider, account, nativeCurrency, fromAmount / 2n, swapFrom)
+}
+
+// TODO: update gasPriceWei periodically
+let gasPriceWei: bigint
 
 async function main () {
   if (NODE_ENV == 'development') {
     // fund token for development
+    const balance = await chainClient.getBalance({
+      address: account.address
+    })
+    // if (!balance) {
+      await fundToken()
+      logger.info("fund complete")
+    // }
   } else {
     // TODO: check token balance
   }
-  // TODO: update gasPriceWei periodically
-  const gasPriceWei = await chainClient.getGasPrice()
+  //
+  const redisClient = await createClient({
+    url: RedisUrl,
+  }).connect();
+  const swapPoolProvider = new RedisSwapPoolProvider(
+    onChainSwapPoolProvider,
+    redisClient,
+  )
+  redisClient.set("key", "value");
+  //
+  gasPriceWei = await chainClient.getGasPrice()
   const arbitrage = new Arbitrage(chain, chainClient, account, swapPoolProvider, FlashLoadSmartRouterAddress)
   const attackPlan = await arbitrage.findBestAttack(swapFrom, swapTo, swapFromAmount, gasPriceWei)
   logger.info(attackPlan)

@@ -14,12 +14,14 @@
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",
   "devDependencies": {
+    "@types/redis": "^4.0.11",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
     "@typescript-eslint/parser": "^8.34.0",
     "esbuild": "^0.25.5",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
     "prettier": "^3.5.3",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0"
   },
   "dependencies": {
@@ -27,9 +29,12 @@
     "@pancakeswap/sdk": "^5.8.14",
     "@pancakeswap/smart-router": "^7.2.5",
     "@pancakeswap/tokens": "^0.7.5",
+    "@redis/client": "^5.5.6",
+    "@redis/json": "^5.5.6",
     "dotenv": "^16.5.0",
     "pino": "^9.7.0",
     "pino-pretty": "^13.0.0",
+    "redis": "^5.5.6",
     "viem": "^2.31.0",
     "zod": "^3.25.58"
   },
