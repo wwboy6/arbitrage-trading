@@ -1,6 +1,6 @@
 import { Currency, CurrencyAmount, Native, Percent, ERC20Token } from '@pancakeswap/sdk'
 import { Pool, PoolType, SmartRouter, V2Pool } from '@pancakeswap/smart-router'
-import { Chain, PublicClient } from 'viem';
+import { Chain, getAddress, PublicClient } from 'viem';
 import { GraphQLClient } from 'graphql-request'
 import { Tick } from '@pancakeswap/v3-sdk'
 import { toSerializable, parseSerializable } from '../util'
@@ -80,7 +80,7 @@ export class OnChainSwapPoolProvider implements SwapPoolProvider {
       const token1 = transformToToken(data.token1, this.chain.id)
       return {
         type: PoolType.V2,
-        address: data.address, // TODO:
+        address: getAddress(data.address), // TODO:
         reserve0: currencyAmountFromDisplayString(token0, data.reserve0),
         reserve1: currencyAmountFromDisplayString(token1, data.reserve1),
       }
@@ -118,7 +118,7 @@ export class OnChainSwapPoolProvider implements SwapPoolProvider {
 function transformToToken(data: any, defaultChainId: Number = 0) : ERC20Token {
   return new ERC20Token(
     Number(data.chainId || defaultChainId),
-    data.address,
+    getAddress(data.address),
     Number(data.decimals),
     data.symbol,
     data.name,
