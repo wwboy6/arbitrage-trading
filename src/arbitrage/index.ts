@@ -58,9 +58,11 @@ export class Arbitrage {
     // prepare for backward trade
     // exclude pools used in foward trade
     const pools = forwardTrade.routes.map(r => r.pools).flat()
+    // FIXME: use universal identifier
     const poolAddresses = new Set(pools.map(p => (p as any).address))
     const swapPools2 = swapPools.filter((p : any) => !poolAddresses.has(p.address) )
     // backward trade
+    // FIXME: getBestTrade for V2 may not compatable with Uniswap pair
     const backwardTrade = await SmartRouter.getBestTrade(forwardTrade.outputAmount, swapFrom, TradeType.EXACT_INPUT, {
       gasPriceWei,
       maxHops: 2,
@@ -71,7 +73,7 @@ export class Arbitrage {
     })
     if (!backwardTrade) throw new Error('no backward trade is found')
     // evaluate attack
-    const tokenGain = backwardTrade.outputAmount.subtract(swapFromAmount)
+    const tokenGain : CurrencyAmount<ERC20Token> = backwardTrade.outputAmount.subtract(swapFromAmount) as any
     return {
       swapFromAmount,
       swapTo,
@@ -118,7 +120,8 @@ export class Arbitrage {
   }
 
   async performAttack(attackPlan: AttackPlan) : Promise<AttackResult> {
-    const { swapFrom, swapTo, swapFromAmount, trades } = attackPlan
+    const { swapFromAmount, swapTo, trades } = attackPlan
+    const swapFrom = swapFromAmount.currency
     // const forwardTrade = this.prepareTradeForCustomContract(ft)
     // const backwardTrade = this.prepareTradeForCustomContract(bt)
     const calldatas = trades.map(t => {
@@ -141,6 +144,8 @@ export class Arbitrage {
       account: this.account,
     })
     let hash = await this.walletClient.writeContract(request)
+    // TODO: run contract
+    //
     const tokenBalance1 = await this.getBalanceOfTokenOrNative(this.account.address, swapFrom)
     const nativeBalance1 = await this.getBalanceOfTokenOrNative(this.account.address , this.nativeCurrency)
     return {

@@ -14,8 +14,6 @@ import { RequestInfo, RequestInit } from 'node-fetch'
 
 import env from '../env'
 import { UniswapV2_8EjC_query, UniswapV2_8EjC_Type, UniswapV2_8EjC_Url } from './graphql-info';
-import { findTokenWithSymbol } from '../util/token';
-import { bsc } from 'viem/chains';
 import Big from 'big.js'
 
 const { PROXY_URL } = env
@@ -78,12 +76,13 @@ export class OnChainSwapPoolProvider implements SwapPoolProvider {
     const v2Pools = [...response.q0, ...response.q1, ...response.qb].map<V2Pool>(data => {
       const token0 = transformToToken(data.token0, this.chain.id)
       const token1 = transformToToken(data.token1, this.chain.id)
-      return {
+      const pool : any = { // TODO: type
         type: PoolType.V2,
         address: getAddress(data.address), // TODO:
         reserve0: currencyAmountFromDisplayString(token0, data.reserve0),
         reserve1: currencyAmountFromDisplayString(token1, data.reserve1),
       }
+      return pool
     })
     // FIXME: v3
     return v2Pools

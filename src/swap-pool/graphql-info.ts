@@ -1,4 +1,4 @@
-
+const queryLimit = 1000
 
 export const UniswapV2_8EjC_Url = 'https://gateway.thegraph.com/api/subgraphs/id/8EjCaWZumyAfN3wyB4QnibeeXaYS8i4sp1PiWT91AGrt'
 
@@ -11,7 +11,7 @@ export const UniswapV2_8EjC_query =`
     q0: pairs(
       orderBy: reserveUSD
       orderDirection: desc
-      first: 100
+      first: ${queryLimit}
       where: {
         token0_in: $tokenAddress
         token1_not_in: $tokenAddress
@@ -38,7 +38,7 @@ export const UniswapV2_8EjC_query =`
     q1: pairs(
       orderBy: reserveUSD
       orderDirection: desc
-      first: 100
+      first: ${queryLimit}
       where: {
         token0_not_in: $tokenAddress
         token1_in: $tokenAddress
@@ -65,7 +65,7 @@ export const UniswapV2_8EjC_query =`
     qb:pairs(
       orderBy: reserveUSD
       orderDirection: desc
-      first: 100
+      first: ${queryLimit}
       where: {
         token0_in: $tokenAddress
         token1_in: $tokenAddress
