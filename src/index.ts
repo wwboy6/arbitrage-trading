@@ -9,7 +9,8 @@ import { ERC20Token, Native } from '@pancakeswap/sdk'
 import { OnChainSwapPoolProvider, RedisSwapPoolProvider } from './swap-pool'
 import { privateKeyToAccount } from 'viem/accounts'
 import { bestTradeExactInput } from './swap-pool/trade'
-import { createClient } from 'redis'
+import * as redis from '@redis/client'
+import { RedisClient } from './util/redis'
 
 const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, FlashLoadSmartRouterAddress, THE_GRAPH_KEY, RedisUrl } = env
 
@@ -94,22 +95,29 @@ async function main () {
     const balance = await chainClient.getBalance({
       address: account.address
     })
-    // if (!balance) {
+    if (!balance) {
       await fundToken()
       logger.info("fund complete")
-    // }
+    }
   } else {
     // TODO: check token balance
   }
   //
-  const redisClient = await createClient({
+  const redisClient: RedisClient = await redis.createClient({
     url: RedisUrl,
-  }).connect();
+    // modules: {
+    //   json: redisJson // Register RedisJSON module
+    // }
+  })
+    .on('error', (err) => console.log('Redis Client Error', err))
+    .on('connect', () => console.log('Connected to Redis'))
+    .connect()
   const swapPoolProvider = new RedisSwapPoolProvider(
     onChainSwapPoolProvider,
     redisClient,
   )
-  redisClient.set("key", "value");
+  // TODO:
+  await swapPoolProvider.fetchData(swapFrom, swapTo)
   //
   gasPriceWei = await chainClient.getGasPrice()
   const arbitrage = new Arbitrage(chain, chainClient, account, swapPoolProvider, FlashLoadSmartRouterAddress)

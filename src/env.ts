@@ -13,5 +13,6 @@ const envSchema = z.object({
   SwapFromAmount: z.string().transform<bigint>(s => BigInt(s)),
   THE_GRAPH_KEY: z.string(),
   RedisUrl: z.string(),
+  PROXY_URL: z.string(),
 });
 export default envSchema.parse(process.env);
