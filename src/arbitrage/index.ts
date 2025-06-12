@@ -1,15 +1,13 @@
-import { Account, Chain, createWalletClient, formatEther, http, PublicClient, WalletClient } from "viem";
-import { SmartRouter, SmartRouterTrade, SMART_ROUTER_ADDRESSES, SwapRouter, QuoteProvider } from '@pancakeswap/smart-router'
-import { ChainId, CurrencyAmount, ERC20Token, Native, Percent, TradeType } from "@pancakeswap/sdk";
-import { SwapPoolProvider } from "../swap-pool";
+import { Account, Chain, createWalletClient, http, PublicClient, WalletClient } from "viem";
+import { SmartRouter, SmartRouterTrade, SMART_ROUTER_ADDRESSES, SwapRouter, QuoteProvider, Pool } from '@pancakeswap/smart-router'
+import { ChainId, Currency, CurrencyAmount, ERC20Token, Native, Percent, TradeType } from "@pancakeswap/sdk";
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 
 export type AttackPlan = {
-  swapFrom: ERC20Token,
+  swapFromAmount: CurrencyAmount<ERC20Token>,
   swapTo: ERC20Token,
-  swapFromAmount: bigint,
   trades: SmartRouterTrade<TradeType>[]
-  tokenGain: bigint,
+  tokenGain: CurrencyAmount<ERC20Token>,
 }
 
 export type AttackResult = {
@@ -23,17 +21,15 @@ export type AttackResult = {
 export class Arbitrage {
   chainClient: PublicClient;
   account: Account;
-  swapPoolProvider: SwapPoolProvider;
   flashLoadSmartRouterAddress: `0x${string}`;
   nativeCurrency: Native;
   walletClient: WalletClient;
   smartRouterAddress: string;
   quoteProvider: QuoteProvider;
 
-  constructor(chain: Chain, chainClient: PublicClient, account: Account, swapPoolProvider: SwapPoolProvider, flashLoadSmartRouterAddress: `0x${string}`) {
+  constructor(chain: Chain, chainClient: PublicClient, account: Account, flashLoadSmartRouterAddress: `0x${string}`) {
     this.chainClient = chainClient
     this.account = account
-    this.swapPoolProvider = swapPoolProvider
     this.flashLoadSmartRouterAddress = flashLoadSmartRouterAddress
     this.nativeCurrency = Native.onChain(chain.id as ChainId)
     this.walletClient = createWalletClient({
@@ -45,13 +41,12 @@ export class Arbitrage {
     this.quoteProvider = SmartRouter.createOffChainQuoteProvider()
   }
 
-  async findBestAttack(swapFrom: ERC20Token, swapTo: ERC20Token, swapFromAmount: bigint, gasPriceWei: bigint) : Promise<AttackPlan> { // TODO: return type
-    const swapPools = await this.swapPoolProvider.getPoolForTokens(swapFrom, swapTo)
-    if (!swapPools || !swapPools.length) throw new Error('No pool is found')
+  async findBestAttack(swapFromAmount: CurrencyAmount<ERC20Token>, swapTo: ERC20Token, swapPools: Pool[], gasPriceWei: bigint) : Promise<AttackPlan> { // TODO: return type
+    const swapFrom = swapFromAmount.currency
+    if (!swapPools || !swapPools.length) throw new Error('no pool')
     // TODO: exclude some pools
     // forward trade
-    const amount = CurrencyAmount.fromRawAmount(swapFrom, swapFromAmount)
-    const forwardTrade = await SmartRouter.getBestTrade(amount, swapTo, TradeType.EXACT_INPUT, {
+    const forwardTrade = await SmartRouter.getBestTrade(swapFromAmount, swapTo, TradeType.EXACT_INPUT, {
       gasPriceWei,
       maxHops: 2,
       maxSplits: 1, // TODO:
@@ -59,7 +54,7 @@ export class Arbitrage {
       quoteProvider: this.quoteProvider,
       quoterOptimization: true,
     })
-    if (!forwardTrade) throw new Error('No forward trade is found')
+    if (!forwardTrade) throw new Error('no forward trade is found')
     // prepare for backward trade
     // exclude pools used in foward trade
     const pools = forwardTrade.routes.map(r => r.pools).flat()
@@ -74,14 +69,14 @@ export class Arbitrage {
       quoteProvider: this.quoteProvider,
       quoterOptimization: true,
     })
-    if (!backwardTrade) throw new Error('No backward trade is found')
+    if (!backwardTrade) throw new Error('no backward trade is found')
     // evaluate attack
-    const tokenGain = backwardTrade.outputAmount.numerator - swapFromAmount
+    const tokenGain = backwardTrade.outputAmount.subtract(swapFromAmount)
     return {
-      swapFrom,
-      swapTo,
       swapFromAmount,
-      trades: [forwardTrade, backwardTrade], tokenGain
+      swapTo,
+      trades: [forwardTrade, backwardTrade],
+      tokenGain,
     }
   }
   

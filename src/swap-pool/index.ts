@@ -1,6 +1,6 @@
 import { Currency, CurrencyAmount, Native, Percent, ERC20Token } from '@pancakeswap/sdk'
 import { Pool, PoolType, SmartRouter, V2Pool } from '@pancakeswap/smart-router'
-import { PublicClient } from 'viem';
+import { Chain, PublicClient } from 'viem';
 import { GraphQLClient } from 'graphql-request'
 import { Tick } from '@pancakeswap/v3-sdk'
 import { toSerializable, parseSerializable } from '../util'
@@ -29,28 +29,19 @@ export interface SwapPoolProvider {
   getPoolForTokens(token0: Currency, token1: Currency) : Promise<Pool[]>
 }
 
-function findOrCreateToken(data: any, chainId = bsc.id) : Currency { // TODO: type
-  if (!data.symbol) throw new Error('no symbol')
-  const token = findTokenWithSymbol(data.symbol)
-  if (token) return token
-  // try create token
-  // TODO: check native? 
-  // return Native.onChain(data.chainId)
-  if (!data.address || !data.decimals) throw new Error('cannot create token')
-  return new ERC20Token(chainId, data.address, Number(data.decimals), data.symbol, data.name, data.projectLink)
-}
-
 function currencyAmountFromDisplayString<C extends Currency>(currency: C, str: string) : CurrencyAmount<C> {
   const amount = BigInt(Big(str).mul((10n**BigInt(currency.decimals)).toString()).toFixed(0))
   return CurrencyAmount.fromRawAmount(currency, amount)
 }
 
 export class OnChainSwapPoolProvider implements SwapPoolProvider {
+  chain: Chain
   chainClient: PublicClient;
   v2SubgraphClient: GraphQLClient;
   v3SubgraphClient: GraphQLClient;
   
-  constructor(chainClient: PublicClient, apiKey: string) {
+  constructor(chain: Chain, chainClient: PublicClient, apiKey: string) {
+    this.chain = chain
     this.chainClient = chainClient
 
     const graphQLClientConfig : PatchedRequestInit = {}
@@ -76,18 +67,20 @@ export class OnChainSwapPoolProvider implements SwapPoolProvider {
     this.v3SubgraphClient = new GraphQLClient(`https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/A1fvJWQLBeUAggX2WQTMm3FKjXTekNXo77ZySun4YN2m`, graphQLClientConfig)
   }
 
-  async getPoolForTokens(token0: Currency, token1: Currency): Promise<Pool[]> {
+  async getPoolForTokens(currency0: Currency, currency1: Currency): Promise<Pool[]> {
+    const token0 = currency0.wrapped
+    const token1 = currency1.wrapped
     let response = await this.v2SubgraphClient.request<UniswapV2_8EjC_Type>(
       UniswapV2_8EjC_query,
       // TODO: study query with address instead of symbol
-      { tokenSymbols: [token0.symbol, token1.symbol] }
+      { tokenAddress: [token0.address.toLowerCase(), token1.address.toLowerCase()] }
     );
     const v2Pools = [...response.q0, ...response.q1, ...response.qb].map<V2Pool>(data => {
-      const token0 = findOrCreateToken(data.token0)
-      const token1 = findOrCreateToken(data.token1)
+      const token0 = transformToToken(data.token0, this.chain.id)
+      const token1 = transformToToken(data.token1, this.chain.id)
       return {
         type: PoolType.V2,
-        // address: data.address, // TODO:
+        address: data.address, // TODO:
         reserve0: currencyAmountFromDisplayString(token0, data.reserve0),
         reserve1: currencyAmountFromDisplayString(token1, data.reserve1),
       }
@@ -122,15 +115,20 @@ export class OnChainSwapPoolProvider implements SwapPoolProvider {
   // }
 }
 
-function transformToCurrency(data: any) : Currency {
+function transformToToken(data: any, defaultChainId: Number = 0) : ERC20Token {
+  return new ERC20Token(
+    Number(data.chainId || defaultChainId),
+    data.address,
+    Number(data.decimals),
+    data.symbol,
+    data.name,
+    data.projectLink
+  )
+}
+
+function transformToCurrency(data: any, defaultChainId: Number = 0) : Currency {
   if (data.isToken) {
-    return new ERC20Token(
-      data.chainId,
-      data.address,
-      data.decimals,
-      data.symbol,
-      data.name,
-      data.projectLink)
+    return transformToToken(data, defaultChainId)
   } else {
     return Native.onChain(data.chainId)
   }
