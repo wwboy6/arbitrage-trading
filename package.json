@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "start": "node dist/index.js | pino-pretty",
+    "attack": "node dist/performAttackPlan.js | pino-pretty",
     "dev": "ts-node-dev --respawn src/index.ts | pino-pretty",
     "redis-up": "podman run -d --name redis -p 6379:6379 -e ALLOW_EMPTY_PASSWORD=yes -u 0 redis"
   },

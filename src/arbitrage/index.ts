@@ -4,6 +4,7 @@ import { ChainId, Currency, CurrencyAmount, ERC20Token, Native, Percent, TradeTy
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import FlashLoanSmartRouterInfo from '../contract/FlashLoanSmartRouter.json'
 import { transformToCurrency, transformToCurrencyAmount, transformToSwapPool } from "../swap-pool";
+import { getBalanceOfTokenOrNative, prepareTradeForCustomContract } from "../util/bc";
 
 export type AttackPlan = {
   swapFromAmount: CurrencyAmount<ERC20Token>,
@@ -83,49 +84,12 @@ export class Arbitrage {
       tokenGain,
     }
   }
-  
-  async getBalanceOfTokenOrNative(address : `0x${string}` , token : Native | ERC20Token) : Promise<bigint> {
-    if (token.isNative) {
-      // bsc
-      const balance = await this.chainClient.getBalance({
-        address
-      })
-      return balance
-    } else {
-      const balance : any = await this.chainClient.readContract({
-        address: token.address,
-        abi: ERC20.abi,
-        functionName: 'balanceOf',
-        args: [address],
-      })
-      return balance
-    }
-  }
-
-  prepareTradeForCustomContract(trade: SmartRouterTrade<TradeType>) {
-    const inputAmount = CurrencyAmount.fromRawAmount(trade.inputAmount.currency, 0n) // get all transferred balance
-    const outputAmount = CurrencyAmount.fromRawAmount(trade.outputAmount.currency, 0n) // no minimum output
-    const updatedTrade : SmartRouterTrade<TradeType> = {
-      ...trade,
-      inputAmount,
-      outputAmount,
-      routes: [
-        {
-          ...trade.routes[0],
-          inputAmount,
-          outputAmount,
-          percent: 100,
-        }
-      ]
-    }
-    return updatedTrade
-  }
 
   async performAttack(attackPlan: AttackPlan) : Promise<AttackResult> {
     const { swapFromAmount, swapTo, trades } = attackPlan
     const swapFrom = swapFromAmount.currency
     const calldatas = trades.map(t => {
-      const trade = this.prepareTradeForCustomContract(t)
+      const trade = prepareTradeForCustomContract(t)
       const { calldata } = SwapRouter.swapCallParameters(trade, {
         recipient: this.flashLoadSmartRouterAddress,
         slippageTolerance: new Percent(1), // TODO:
@@ -133,8 +97,8 @@ export class Arbitrage {
       return calldata
     })
     // TODO: cache balance somewhere
-    const tokenBalance0 = await this.getBalanceOfTokenOrNative(this.account.address, swapFrom)
-    const nativeBalance0 = await this.getBalanceOfTokenOrNative(this.account.address , this.nativeCurrency)
+    const tokenBalance0 = await getBalanceOfTokenOrNative(this.chainClient, this.account.address, swapFrom)
+    const nativeBalance0 = await getBalanceOfTokenOrNative(this.chainClient, this.account.address , this.nativeCurrency)
     const swapFromBalance = swapFromAmount.numerator / swapFromAmount.denominator
     // approve
     const { request: req0 } = await this.chainClient.simulateContract({
@@ -156,8 +120,8 @@ export class Arbitrage {
     console.log(res1)
     hash = await this.walletClient.writeContract(req1)
     //
-    const tokenBalance1 = await this.getBalanceOfTokenOrNative(this.account.address, swapFrom)
-    const nativeBalance1 = await this.getBalanceOfTokenOrNative(this.account.address , this.nativeCurrency)
+    const tokenBalance1 = await getBalanceOfTokenOrNative(this.chainClient, this.account.address, swapFrom)
+    const nativeBalance1 = await getBalanceOfTokenOrNative(this.chainClient, this.account.address , this.nativeCurrency)
     return {
       attackPlan,
       tokenGain: CurrencyAmount.fromRawAmount(swapFrom, tokenBalance1 - tokenBalance0),
@@ -184,7 +148,7 @@ export function transformToTrade(obj: any) : SmartRouterTrade<TradeType> {
     // gasEstimate
     ...obj,
     inputAmount: transformToCurrencyAmount(obj.inputAmount),
-    outputAmount: transformToCurrencyAmount(obj.inputAmount),
+    outputAmount: transformToCurrencyAmount(obj.outputAmount),
     routes: obj.routes.map(transformToRoute),
     gasEstimateInUSD: transformToCurrencyAmount(obj.gasEstimateInUSD),
   }

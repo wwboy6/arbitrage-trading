@@ -146,7 +146,7 @@ async function main () {
   logger.info(`attackPlan ${swapFromAmount.toFixed(5)} ${attackPlan.trades[0].outputAmount.toFixed(5)} ${attackPlan.trades[1].outputAmount.toFixed(5)}`)
   logger.info(`tokenGain ${attackPlan.tokenGain.toFixed(5)}`)
   //
-  await saveObject(attackPlan, './attackPlan.json')
+  await saveObject(attackPlan, './data/attackPlan.json')
   //
   console.time('perform attack')
   const result = await arbitrage.performAttack(attackPlan)
