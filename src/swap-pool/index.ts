@@ -71,9 +71,9 @@ export class OnChainSwapPoolProvider implements SwapPoolProvider {
     let response = await this.v2SubgraphClient.request<UniswapV2_8EjC_Type>(
       UniswapV2_8EjC_query,
       // TODO: study query with address instead of symbol
-      { tokenAddress: [token0.address.toLowerCase(), token1.address.toLowerCase()] }
+      { token0: token0.address.toLowerCase(), token1: token1.address.toLowerCase() }
     );
-    const v2Pools = [...response.q0, ...response.q1, ...response.qb].map<V2Pool>(data => {
+    const v2Pools = Object.values(response).flat().map<V2Pool>(data => {
       const token0 = transformToToken(data.token0, this.chain.id)
       const token1 = transformToToken(data.token1, this.chain.id)
       const pool : any = { // TODO: type
