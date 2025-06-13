@@ -2,6 +2,7 @@ import { Account, Chain, createWalletClient, http, PublicClient, WalletClient } 
 import { SmartRouter, SmartRouterTrade, SMART_ROUTER_ADDRESSES, SwapRouter, QuoteProvider, Pool } from '@pancakeswap/smart-router'
 import { ChainId, Currency, CurrencyAmount, ERC20Token, Native, Percent, TradeType } from "@pancakeswap/sdk";
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
+import FlashLoadSmartRouterInfo from '../contract/FlashLoadSmartRouter.json'
 
 export type AttackPlan = {
   swapFromAmount: CurrencyAmount<ERC20Token>,
@@ -12,8 +13,8 @@ export type AttackPlan = {
 
 export type AttackResult = {
   attackPlan: AttackPlan,
-  tokenGain: bigint,
-  nativeCurrencyChange: bigint,
+  tokenGain: CurrencyAmount<Currency>,
+  nativeCurrencyChange: CurrencyAmount<Currency>,
   hash: `0x${string}`,
   // TODO: estimate profit in usd
 }
@@ -135,23 +136,33 @@ export class Arbitrage {
     // TODO: cache balance somewhere
     const tokenBalance0 = await this.getBalanceOfTokenOrNative(this.account.address, swapFrom)
     const nativeBalance0 = await this.getBalanceOfTokenOrNative(this.account.address , this.nativeCurrency)
+    const swapFromBalance = swapFromAmount.numerator / swapFromAmount.denominator
     // approve
-    const { request } = await this.chainClient.simulateContract({
+    const { request: req0 } = await this.chainClient.simulateContract({
       address: swapFrom.address,
       abi: ERC20.abi,
       functionName: 'approve',
-      args: [this.flashLoadSmartRouterAddress, swapFromAmount],
+      args: [this.flashLoadSmartRouterAddress, swapFromBalance],
       account: this.account,
     })
-    let hash = await this.walletClient.writeContract(request)
+    let hash = await this.walletClient.writeContract(req0)
     // TODO: run contract
+    const { request: req1, result: res1 } = await this.chainClient.simulateContract({
+      account: this.account,
+      address: this.flashLoadSmartRouterAddress,
+      abi: FlashLoadSmartRouterInfo.abi,
+      functionName: "trade",
+      args: [swapFrom.address, swapFromBalance, calldatas[0], swapTo.address, calldatas[1]],
+    })
+    console.log(res1)
+    hash = await this.walletClient.writeContract(req1)
     //
     const tokenBalance1 = await this.getBalanceOfTokenOrNative(this.account.address, swapFrom)
     const nativeBalance1 = await this.getBalanceOfTokenOrNative(this.account.address , this.nativeCurrency)
     return {
       attackPlan,
-      tokenGain: tokenBalance1 - tokenBalance0,
-      nativeCurrencyChange: nativeBalance1 - nativeBalance0,
+      tokenGain: CurrencyAmount.fromRawAmount(swapFrom, tokenBalance1 - tokenBalance0),
+      nativeCurrencyChange: CurrencyAmount.fromRawAmount(this.nativeCurrency,nativeBalance1 - nativeBalance0),
       hash
     }
   }

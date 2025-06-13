@@ -5,19 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "ts-node",
-      "type": "node",
+      "name": "Launch Program",
+      "program": "${workspaceFolder}/dist/index.js",
       "request": "launch",
-      "args": [
-        "src/index.ts"
+      "skipFiles": [
+        "<node_internals>/**"
       ],
-      "runtimeArgs": [
-        "-r",
-        "ts-node/register"
-      ],
-      "cwd": "${workspaceRoot}",
-      "protocol": "inspector",
-      "internalConsoleOptions": "openOnSessionStart"
+      "type": "node"
     }
   ]
 }

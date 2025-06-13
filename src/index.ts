@@ -93,12 +93,18 @@ let gasPriceWei: bigint
 async function main () {
   if (NODE_ENV == 'development') {
     // fund token for development
+    // FIXME: check token balance instead
     const balance = await chainClient.getBalance({
       address: account.address
     })
+    logger.info(`balance: ${balance}`)
     if (!balance) {
-      await fundToken()
-      logger.info('fund complete')
+      if (swapFrom.symbol == "WBNB") {
+        logger.warn('cannot fund WBNB yet')
+      } else {
+        await fundToken()
+        logger.info('fund complete')
+      }
     }
   } else {
     // TODO: check token balance
@@ -139,8 +145,9 @@ async function main () {
   logger.info(`attackPlan ${swapFromAmount.toFixed(5)} ${attackPlan.trades[0].outputAmount.toFixed(5)} ${attackPlan.trades[1].outputAmount.toFixed(5)}`)
   logger.info(`tokenGain ${attackPlan.tokenGain.toFixed(5)}`)
   //
-  // const result = await arbitrage.performAttack(attackPlan)
-  // logger.info(`result ${result}`)
+  const result = await arbitrage.performAttack(attackPlan)
+  logger.info(`result ${result.hash}`);
+  logger.info(`${result.nativeCurrencyChange.toFixed(5)} ${result.tokenGain.toFixed(5)}`)
 }
 
 main()

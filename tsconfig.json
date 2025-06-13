@@ -9,7 +9,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node" // Ensure Node.js-style resolution
+    "moduleResolution": "node", // Ensure Node.js-style resolution
+    "sourceMap": true, // Enable source maps
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
