@@ -11,8 +11,9 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { bestTradeExactInput } from './swap-pool/trade'
 import * as redis from '@redis/client'
 import { RedisClient } from './util/redis'
+import { saveObject } from './util'
 
-const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, FlashLoadSmartRouterAddress, THE_GRAPH_KEY, RedisUrl } = env
+const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, FlashLoanSmartRouterAddress, THE_GRAPH_KEY, RedisUrl } = env
 
 const logger = pino({ level: PINO_LEVEL })
 
@@ -130,7 +131,7 @@ async function main () {
   const swapPoolProvider = onChainSwapPoolProvider
   //
   gasPriceWei = await chainClient.getGasPrice()
-  const arbitrage = new Arbitrage(chain, chainClient, account, FlashLoadSmartRouterAddress)
+  const arbitrage = new Arbitrage(chain, chainClient, account, FlashLoanSmartRouterAddress)
   //
   console.time('find swap pool')
   const swapPools = await swapPoolProvider.getPoolForTokens(swapFrom, swapTo)
@@ -145,7 +146,11 @@ async function main () {
   logger.info(`attackPlan ${swapFromAmount.toFixed(5)} ${attackPlan.trades[0].outputAmount.toFixed(5)} ${attackPlan.trades[1].outputAmount.toFixed(5)}`)
   logger.info(`tokenGain ${attackPlan.tokenGain.toFixed(5)}`)
   //
+  await saveObject(attackPlan, './attackPlan.json')
+  //
+  console.time('perform attack')
   const result = await arbitrage.performAttack(attackPlan)
+  console.timeEnd('perform attack')
   logger.info(`result ${result.hash}`);
   logger.info(`${result.nativeCurrencyChange.toFixed(5)} ${result.tokenGain.toFixed(5)}`)
 }

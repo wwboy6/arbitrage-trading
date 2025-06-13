@@ -1,8 +1,12 @@
 import { Account, Chain, createWalletClient, http, PublicClient, WalletClient } from "viem";
-import { SmartRouter, SmartRouterTrade, SMART_ROUTER_ADDRESSES, SwapRouter, QuoteProvider, Pool } from '@pancakeswap/smart-router'
+import { SmartRouter, SmartRouterTrade, SMART_ROUTER_ADDRESSES, SwapRouter, QuoteProvider, Pool, PoolType } from '@pancakeswap/smart-router'
 import { ChainId, Currency, CurrencyAmount, ERC20Token, Native, Percent, TradeType } from "@pancakeswap/sdk";
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
-import FlashLoadSmartRouterInfo from '../contract/FlashLoadSmartRouter.json'
+import FlashLoanSmartRouterInfo from '../contract/FlashLoanSmartRouter.json'
+import { transformToCurrency, transformToCurrencyAmount, transformToSwapPool } from "../swap-pool";
+
+import { Route as V2Route } from '@pancakeswap/sdk'
+import { Route as V3Route } from '@pancakeswap/v3-sdk'
 
 export type AttackPlan = {
   swapFromAmount: CurrencyAmount<ERC20Token>,
@@ -123,8 +127,6 @@ export class Arbitrage {
   async performAttack(attackPlan: AttackPlan) : Promise<AttackResult> {
     const { swapFromAmount, swapTo, trades } = attackPlan
     const swapFrom = swapFromAmount.currency
-    // const forwardTrade = this.prepareTradeForCustomContract(ft)
-    // const backwardTrade = this.prepareTradeForCustomContract(bt)
     const calldatas = trades.map(t => {
       const trade = this.prepareTradeForCustomContract(t)
       const { calldata } = SwapRouter.swapCallParameters(trade, {
@@ -150,7 +152,7 @@ export class Arbitrage {
     const { request: req1, result: res1 } = await this.chainClient.simulateContract({
       account: this.account,
       address: this.flashLoadSmartRouterAddress,
-      abi: FlashLoadSmartRouterInfo.abi,
+      abi: FlashLoanSmartRouterInfo.abi,
       functionName: "trade",
       args: [swapFrom.address, swapFromBalance, calldatas[0], swapTo.address, calldatas[1]],
     })
@@ -165,5 +167,40 @@ export class Arbitrage {
       nativeCurrencyChange: CurrencyAmount.fromRawAmount(this.nativeCurrency,nativeBalance1 - nativeBalance0),
       hash
     }
+  }
+}
+
+export function transformToRoute(obj: any, tradeType: TradeType) : V3Route<Currency, Currency> {
+  const inputCurrency = transformToCurrency(obj.inputCurrency)
+  const outputCurrency = transformToCurrency(obj.outputCurrency)
+  const pools = obj.pools.map(transformToSwapPool)
+  switch (obj.pools[0].type) {
+    case PoolType.V2:
+      return new V2Route(pools, inputCurrency, outputCurrency) as any // TODO: type
+    default:
+      return new V3Route(pools, inputCurrency, outputCurrency)
+    // TODO: aptos route
+    // TODO: check if infinity swap use this too
+  }
+}
+
+export function transformToTrade(obj: any) : SmartRouterTrade<TradeType> {
+  return {
+    // gasEstimate
+    ...obj,
+    inputAmount: transformToCurrencyAmount(obj.inputAmount),
+    outputAmount: transformToCurrencyAmount(obj.inputAmount),
+    routes: obj.routes.map(transformToRoute),
+    gasEstimateInUSD: transformToCurrencyAmount(obj.gasEstimateInUSD),
+  }
+}
+
+export function transformToAttackPlan(obj: any) : AttackPlan {
+  return {
+    // TODO: typing
+    swapFromAmount: transformToCurrency(obj.swapFromAmount) as any,
+    swapTo: transformToCurrency(obj.swapTo) as any,
+    trades: obj.trades.map(transformToTrade),
+    tokenGain: transformToCurrency(obj.tokenGain) as any,
   }
 }

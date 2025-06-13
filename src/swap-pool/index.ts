@@ -114,7 +114,7 @@ export class OnChainSwapPoolProvider implements SwapPoolProvider {
   // }
 }
 
-function transformToToken(data: any, defaultChainId: Number = 0) : ERC20Token {
+export function transformToToken(data: any, defaultChainId: Number = 0) : ERC20Token {
   return new ERC20Token(
     Number(data.chainId || defaultChainId),
     getAddress(data.address),
@@ -125,7 +125,7 @@ function transformToToken(data: any, defaultChainId: Number = 0) : ERC20Token {
   )
 }
 
-function transformToCurrency(data: any, defaultChainId: Number = 0) : Currency {
+export function transformToCurrency(data: any, defaultChainId: Number = 0) : Currency {
   if (data.isToken) {
     return transformToToken(data, defaultChainId)
   } else {
@@ -133,14 +133,14 @@ function transformToCurrency(data: any, defaultChainId: Number = 0) : Currency {
   }
 }
 
-function transformToCurrencyReserve(data: any) {
+export function transformToCurrencyAmount(data: any) : CurrencyAmount<Currency> {
   const currency = transformToCurrency(data.currency)
   return CurrencyAmount.fromFractionalAmount(currency, data.numerator, data.denominator)
 }
 
-function transformToSwapPool(data: any) {
-  const reserve0 = transformToCurrencyReserve(data.reserve0)
-  const reserve1 = transformToCurrencyReserve(data.reserve1)
+export function transformToSwapPool(data: any) : Pool {
+  const reserve0 = transformToCurrencyAmount(data.reserve0)
+  const reserve1 = transformToCurrencyAmount(data.reserve1)
   switch(data.type) {
     case PoolType.V2:
       return {

@@ -1,3 +1,5 @@
+import fs from 'fs/promises'
+
 export function toSerializable(value: any) : any {
   switch (typeof(value)) {
     case 'object':
@@ -39,4 +41,14 @@ export function parseSerializable(value: any) : any {
       }, {} as any)
   }
   return value
+}
+
+export async function saveObject(obj: any, filePath: string) {
+  const data = JSON.stringify(toSerializable(obj), null, 2)
+  await fs.writeFile(filePath, data, { encoding: 'utf8', flag: 'w' })
+}
+
+export async function loadObject(filePath: string, transformer: any) {
+  const raw = await fs.readFile(filePath, 'utf8')
+  return transformer(parseSerializable(raw))
 }

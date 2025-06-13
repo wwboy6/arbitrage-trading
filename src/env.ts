@@ -7,7 +7,7 @@ const envSchema = z.object({
   INFURA_KEY: z.string(),
   PRIVATE_KEY: z.string().startsWith("0x").transform<`0x${string}`>((s: any) => s),
   PINO_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
-  FlashLoadSmartRouterAddress: z.string().startsWith('0x').transform<`0x${string}`>((s: any) => s),
+  FlashLoanSmartRouterAddress: z.string().startsWith('0x').transform<`0x${string}`>((s: any) => s),
   TOKEN0: z.string(),
   TOKEN1: z.string(),
   SwapFromAmount: z.string().transform<bigint>(s => BigInt(s)),
