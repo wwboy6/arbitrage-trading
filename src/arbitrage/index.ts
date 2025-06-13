@@ -1,12 +1,9 @@
 import { Account, Chain, createWalletClient, http, PublicClient, WalletClient } from "viem";
-import { SmartRouter, SmartRouterTrade, SMART_ROUTER_ADDRESSES, SwapRouter, QuoteProvider, Pool, PoolType } from '@pancakeswap/smart-router'
+import { SmartRouter, SmartRouterTrade, SMART_ROUTER_ADDRESSES, SwapRouter, QuoteProvider, Pool, PoolType, Route, RouteType } from '@pancakeswap/smart-router'
 import { ChainId, Currency, CurrencyAmount, ERC20Token, Native, Percent, TradeType } from "@pancakeswap/sdk";
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import FlashLoanSmartRouterInfo from '../contract/FlashLoanSmartRouter.json'
 import { transformToCurrency, transformToCurrencyAmount, transformToSwapPool } from "../swap-pool";
-
-import { Route as V2Route } from '@pancakeswap/sdk'
-import { Route as V3Route } from '@pancakeswap/v3-sdk'
 
 export type AttackPlan = {
   swapFromAmount: CurrencyAmount<ERC20Token>,
@@ -170,17 +167,15 @@ export class Arbitrage {
   }
 }
 
-export function transformToRoute(obj: any, tradeType: TradeType) : V3Route<Currency, Currency> {
-  const inputCurrency = transformToCurrency(obj.inputCurrency)
-  const outputCurrency = transformToCurrency(obj.outputCurrency)
-  const pools = obj.pools.map(transformToSwapPool)
-  switch (obj.pools[0].type) {
-    case PoolType.V2:
-      return new V2Route(pools, inputCurrency, outputCurrency) as any // TODO: type
-    default:
-      return new V3Route(pools, inputCurrency, outputCurrency)
-    // TODO: aptos route
-    // TODO: check if infinity swap use this too
+export function transformToRoute(obj: any, tradeType: TradeType) : Route {
+  return {
+    // percent
+    ...obj,
+    type: obj.type as RouteType,
+    inputAmount: transformToCurrencyAmount(obj.inputAmount),
+    outputAmount: transformToCurrencyAmount(obj.outputAmount),
+    path: obj.path.map(transformToCurrency),
+    pools: obj.pools.map(transformToSwapPool),
   }
 }
 
@@ -198,9 +193,9 @@ export function transformToTrade(obj: any) : SmartRouterTrade<TradeType> {
 export function transformToAttackPlan(obj: any) : AttackPlan {
   return {
     // TODO: typing
-    swapFromAmount: transformToCurrency(obj.swapFromAmount) as any,
+    swapFromAmount: transformToCurrencyAmount(obj.swapFromAmount) as any,
     swapTo: transformToCurrency(obj.swapTo) as any,
     trades: obj.trades.map(transformToTrade),
-    tokenGain: transformToCurrency(obj.tokenGain) as any,
+    tokenGain: transformToCurrencyAmount(obj.tokenGain) as any,
   }
 }

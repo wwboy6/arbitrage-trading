@@ -48,7 +48,7 @@ export async function saveObject(obj: any, filePath: string) {
   await fs.writeFile(filePath, data, { encoding: 'utf8', flag: 'w' })
 }
 
-export async function loadObject(filePath: string, transformer: any) {
+export async function loadObject(filePath: string) {
   const raw = await fs.readFile(filePath, 'utf8')
-  return transformer(parseSerializable(raw))
+  return parseSerializable(JSON.parse(raw))
 }
