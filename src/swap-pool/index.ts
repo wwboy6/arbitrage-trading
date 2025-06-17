@@ -245,3 +245,18 @@ export class RedisSwapPoolProvider implements SwapPoolProvider {
   }
   // TODO: schedule / catch blockchain event to update pool data
 }
+
+// FIXME:
+export async function fetchV2Pool(chainClient: PublicClient, swapFrom: Currency, swapTo: Currency) {
+  const v2SubgraphClient = new GraphQLClient('https://proxy-worker-api.pancakeswap.com/bsc-exchange', {})
+  const v3SubgraphClient = new GraphQLClient('https://api.thegraph.com/subgraphs/name/pancakeswap/exchange-v3-bsc')
+  const v2p = SmartRouter.getV2CandidatePools({
+    onChainProvider: () => chainClient,
+    v2SubgraphProvider: () => v2SubgraphClient,
+    v3SubgraphProvider: () => v3SubgraphClient,
+    currencyA: swapFrom,
+    currencyB: swapTo,
+    // fallbackTimeout: 10000,
+  })
+  return v2p
+}

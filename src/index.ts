@@ -1,12 +1,12 @@
 import env from './env'
 import pino from 'pino'
-import { createPublicClient, createWalletClient, defineChain, http, PublicClient } from 'viem'
+import { createPublicClient, createWalletClient, defineChain, Hash, http, PublicClient } from 'viem'
 import { bsc, Chain } from 'viem/chains'
 import { findTokenWithSymbol } from './util/token'
 import { AttackPlan, SmartRouterArbitrage } from './arbitrage'
 import { z } from 'zod';
 import { Currency, CurrencyAmount, ERC20Token, Native } from '@pancakeswap/sdk'
-import { OnChainSwapPoolProvider } from './swap-pool'
+import { fetchV2Pool, OnChainSwapPoolProvider } from './swap-pool'
 import { privateKeyToAccount } from 'viem/accounts'
 import { bestTradeExactInput } from './swap-pool/trade'
 // import * as redis from '@redis/client'
@@ -123,7 +123,7 @@ function logAttackPlan(attackPlan: AttackPlan) {
   logger.info(`[plan] gain:${attackPlan.tokenGain.toFixed(5)} tokens:${tokenSymbols}`)
 }
 
-async function fetchAndFilterPool() {
+async function fetchAndFilterV3Pool(preferredTokens: Set<Hash>) {
   // TODO: load pool cache from redis
   let swapPools: (V2Pool | V3Pool)[] = swapPoolDataRaw.map((d: any) => Transformer.parsePool(chain.id, d)) as any[]
   if (!swapPools || !swapPools.length) throw new Error('No pool is found')
@@ -131,13 +131,14 @@ async function fetchAndFilterPool() {
   // filter pool and token that can form route (consider route of 1 / 2 pool only)
   // seperate direct pool and indirect pool
   const poolGroups = Object.groupBy(swapPools, p =>
-    arrayContains(swapTokenAddresses, getTokenFromPool(p, 0).address) &&
-    arrayContains(swapTokenAddresses, getTokenFromPool(p, 1).address) ? 'directPoolAll' : 'indirectPoolAll'
+    arrayContains(swapTokenAddresses, getTokenFromPool(p, 0).address) && arrayContains(swapTokenAddresses, getTokenFromPool(p, 1).address) ? 'directPoolsAll' :
+    preferredTokens.has(getTokenFromPool(p, 0).address) || preferredTokens.has(getTokenFromPool(p, 1).address) ? 'preferredPools' :
+        'indirectPoolsAll'
   )
-  const { directPoolAll = [], indirectPoolAll = [] } = poolGroups
+  const { directPoolsAll = [], preferredPools = [], indirectPoolsAll = [] } = poolGroups
   // search for linked tokens for each target token
   const linkedTokenSets = swapTokenAddresses.map(
-    tokenAddress => indirectPoolAll
+    tokenAddress => indirectPoolsAll
       .map(p => poolTokenIndexes.map(i => getTokenFromPool(p, i).address))
       .filter(addresses => arrayContains(addresses, tokenAddress))
       .map(addresses => addresses.find(addr => addr !== tokenAddress))
@@ -148,13 +149,14 @@ async function fetchAndFilterPool() {
   // const linkedTokensForRoute = linkedTokenSets[0].intersection(linkedTokenSets[1])
   let linkedTokensForRoute = setIntersection(linkedTokenSets[0], linkedTokenSets[1])
   // filter related pool
-  const indirectPool = indirectPoolAll.filter(p =>
+  const indirectPools = indirectPoolsAll.filter(p =>
     linkedTokensForRoute.has(getTokenFromPool(p, 0).address) ||
     linkedTokensForRoute.has(getTokenFromPool(p, 1).address)
   )
   return {
-    directPool: directPoolAll,
-    indirectPool,
+    preferredPools,
+    directPools: directPoolsAll,
+    indirectPools,
     linkedTokensForRoute,
   }
 }
@@ -196,18 +198,29 @@ async function main () {
   // const swapPoolProvider = onChainSwapPoolProvider
   // const swapPools = await swapPoolProvider.getPoolForTokens(swapFrom, swapTo)
   // console.timeEnd('find swap pool')
-  const { directPool, indirectPool, linkedTokensForRoute } = await fetchAndFilterPool()
-
+  // TODO:
+  const v2Pools = await fetchV2Pool(chainClient, swapFrom, swapTo)
+  logger.info(`v2Pools ${v2Pools.length}`)
+  const v2SelectedTokens = new Set([
+    ...v2Pools.map(p => getTokenFromPool(p, 0).address),
+    ...v2Pools.map(p => getTokenFromPool(p, 1).address)
+  ].filter(addr => !arrayContains(swapTokenAddresses, addr)))
+  logger.info(`v2 tokens: ${v2SelectedTokens.size}`)
+  //
+  const { preferredPools, directPools, indirectPools, linkedTokensForRoute } = await fetchAndFilterV3Pool(v2SelectedTokens)
+  logger.info(`preferredPools ${preferredPools.length}`)
+  logger.info(`directPools ${directPools.length}`)
+  logger.info(`indirectPools ${indirectPools.length}`)
   while (true) { // TODO: stop condition for refreshing pool
     // random select limited linked tokens
     const selectedTokens = new Set(randomSelect([...linkedTokensForRoute], LINKED_TOKEN_PICK))
     // const selectedTokens = new Set(randomSelect([...linkedTokensForRoute], 1))
-    const usingIndirectPool = indirectPool.filter(p =>
+    const usingIndirectPools = indirectPools.filter(p =>
       selectedTokens.has(getTokenFromPool(p, 0).address) ||
       selectedTokens.has(getTokenFromPool(p, 1).address)
     )
     //
-    const swapPools = [...directPool, ...usingIndirectPool]
+    const swapPools = [...v2Pools, ...preferredPools, ...directPools, ...usingIndirectPools]
     logger.info(`swapPools ${swapPools.length}`)
     // draft attack plan
     console.time('find attack')
