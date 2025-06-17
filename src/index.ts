@@ -1,17 +1,19 @@
 import env from './env'
 import pino from 'pino'
-import { createPublicClient, createWalletClient, defineChain, formatEther, http, PublicClient } from 'viem'
+import { createPublicClient, createWalletClient, defineChain, http, PublicClient } from 'viem'
 import { bsc, Chain } from 'viem/chains'
 import { findTokenWithSymbol } from './util/token'
-import { Arbitrage } from './arbitrage'
+import { SmartRouterArbitrage } from './arbitrage'
 import { z } from 'zod';
 import { CurrencyAmount, ERC20Token, Native } from '@pancakeswap/sdk'
-import { OnChainSwapPoolProvider, RedisSwapPoolProvider } from './swap-pool'
+import { OnChainSwapPoolProvider } from './swap-pool'
 import { privateKeyToAccount } from 'viem/accounts'
 import { bestTradeExactInput } from './swap-pool/trade'
-import * as redis from '@redis/client'
-import { RedisClient } from './util/redis'
+// import * as redis from '@redis/client'
+// import { RedisClient } from './util/redis'
 import { saveObject } from './util'
+import { Transformer } from '@pancakeswap/smart-router'
+import { throttledHttp } from './util/throttled-http'
 
 const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, FlashLoanSmartRouterAddress, THE_GRAPH_KEY, RedisUrl } = env
 
@@ -58,15 +60,25 @@ const swapMissionSchema = z.object({
 let { swapFrom, swapTo, swapFromAmountBI } = swapMissionSchema.parse(swapMission)
 let swapFromAmount = CurrencyAmount.fromRawAmount(swapFrom, swapFromAmountBI)
 
-const chainClient : PublicClient = createPublicClient({
+const chainClient: PublicClient = createPublicClient({
   chain: chain,
-  transport: http(),
+  transport: throttledHttp(
+    chain.rpcUrls.default.http[0],
+    {
+      retryCount: Infinity, // FIXME:
+      retryDelay: 1 * 1000,
+    },
+    {
+      limit: 3, // TODO: this depends on rpc server
+      interval: 1000
+    }
+  ),
   batch: {
     multicall: {
-      batchSize: 1024 * 200,
+      batchSize: 2**10, // TODO: determine optimal batch size
     }
   },
-});
+})
 
 const account = privateKeyToAccount(PRIVATE_KEY);
 
@@ -120,34 +132,30 @@ async function main () {
   //   .on('error', (err) => console.log('Redis Client Error', err))
   //   .on('connect', () => console.log('Connected to Redis'))
   //   .connect()
-
-  // const swapPoolProvider = new RedisSwapPoolProvider(
-  //   onChainSwapPoolProvider,
-  //   redisClient,
-  // )
-  // // TODO:
-  // await swapPoolProvider.fetchData(swapFrom, swapTo)
-  // FIXME:
-  const swapPoolProvider = onChainSwapPoolProvider
   //
   gasPriceWei = await chainClient.getGasPrice()
-  const arbitrage = new Arbitrage(chain, chainClient, account, FlashLoanSmartRouterAddress)
-  //
-  console.time('find swap pool')
-  const swapPools = await swapPoolProvider.getPoolForTokens(swapFrom, swapTo)
-  console.timeEnd('find swap pool')
+  const arbitrage = new SmartRouterArbitrage(chain, chainClient, account, FlashLoanSmartRouterAddress)
+  // load swap pool
+  // console.time('find swap pool')
+  // const swapPoolProvider = onChainSwapPoolProvider
+  // const swapPools = await swapPoolProvider.getPoolForTokens(swapFrom, swapTo)
+  // console.timeEnd('find swap pool')
+  // TODO: load pool cache from redis
+  const swapPoolDataRaw = require('./swap-pool/pools-wbnb-busd.json')
+  const swapPools = swapPoolDataRaw.map(Transformer.parsePool)
   if (!swapPools || !swapPools.length) throw new Error('No pool is found')
   logger.info(`swap pool count ${swapPools.length}`)
-  //
+  // draft attack plan
   console.time('find attack')
   const attackPlan = await arbitrage.findBestAttack(swapFromAmount, swapTo, swapPools, gasPriceWei)
   console.timeEnd('find attack')
   // logger.info(attackPlan, 'attackPlan')
   logger.info(`attackPlan ${swapFromAmount.toFixed(5)} ${attackPlan.trades[0].outputAmount.toFixed(5)} ${attackPlan.trades[1].outputAmount.toFixed(5)}`)
   logger.info(`tokenGain ${attackPlan.tokenGain.toFixed(5)}`)
-  //
+  // save current attack plan
   await saveObject(attackPlan, './data/attackPlan.json')
-  //
+  // perform attack
+  // TODO: check attack plan profit
   console.time('perform attack')
   const result = await arbitrage.performAttack(attackPlan)
   console.timeEnd('perform attack')
