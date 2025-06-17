@@ -1,4 +1,4 @@
-import { Arbitrage, AttackPlan, transformToAttackPlan } from "./arbitrage"
+import { SmartRouterArbitrage, AttackPlan, transformToAttackPlan } from "./arbitrage"
 import { loadObject, saveObject } from "./util"
 import env from './env'
 import pino from "pino"

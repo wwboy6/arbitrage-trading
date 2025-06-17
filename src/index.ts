@@ -3,19 +3,23 @@ import pino from 'pino'
 import { createPublicClient, createWalletClient, defineChain, http, PublicClient } from 'viem'
 import { bsc, Chain } from 'viem/chains'
 import { findTokenWithSymbol } from './util/token'
-import { SmartRouterArbitrage } from './arbitrage'
+import { AttackPlan, SmartRouterArbitrage } from './arbitrage'
 import { z } from 'zod';
-import { CurrencyAmount, ERC20Token, Native } from '@pancakeswap/sdk'
+import { Currency, CurrencyAmount, ERC20Token, Native } from '@pancakeswap/sdk'
 import { OnChainSwapPoolProvider } from './swap-pool'
 import { privateKeyToAccount } from 'viem/accounts'
 import { bestTradeExactInput } from './swap-pool/trade'
 // import * as redis from '@redis/client'
 // import { RedisClient } from './util/redis'
 import { saveObject } from './util'
-import { Transformer } from '@pancakeswap/smart-router'
+import { Transformer, V2Pool, V3Pool } from '@pancakeswap/smart-router'
 import { throttledHttp } from './util/throttled-http'
+import { setIntersection, randomSelect, arrayContains } from './util/collection'
 
-const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, FlashLoanSmartRouterAddress, THE_GRAPH_KEY, RedisUrl } = env
+import swapPoolDataRaw from './swap-pool/pools-wbnb-busd.json'
+import { getTokenFromPool, poolTokenIndexes } from './util/pool'
+
+const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, FlashLoanSmartRouterAddress, THE_GRAPH_KEY, RedisUrl, LINKED_TOKEN_PICK } = env
 
 const logger = pino({ level: PINO_LEVEL })
 
@@ -58,6 +62,13 @@ const swapMissionSchema = z.object({
 })
 
 let { swapFrom, swapTo, swapFromAmountBI } = swapMissionSchema.parse(swapMission)
+const swapTokens = [swapFrom, swapTo]
+
+function mapToAddress(tokens: Currency[]) {
+  return tokens.map(t => t.wrapped.address)
+}
+const swapTokenAddresses = mapToAddress(swapTokens)
+
 let swapFromAmount = CurrencyAmount.fromRawAmount(swapFrom, swapFromAmountBI)
 
 const chainClient: PublicClient = createPublicClient({
@@ -103,6 +114,51 @@ async function fundToken() {
 // TODO: update gasPriceWei periodically
 let gasPriceWei: bigint
 
+function logAttackPlan(attackPlan: AttackPlan) {
+  // log intermediate token
+  const tokenSymbols = [
+    ...attackPlan.trades[0].routes[0].path.slice(1, -1).map(p => p.symbol),
+    ...attackPlan.trades[1].routes[0].path.slice(1, -1).map(p => p.symbol),
+  ]
+  logger.info(`[plan] gain:${attackPlan.tokenGain.toFixed(5)} tokens:${tokenSymbols}`)
+}
+
+async function fetchAndFilterPool() {
+  // TODO: load pool cache from redis
+  let swapPools: (V2Pool | V3Pool)[] = swapPoolDataRaw.map((d: any) => Transformer.parsePool(chain.id, d)) as any[]
+  if (!swapPools || !swapPools.length) throw new Error('No pool is found')
+  logger.info(`swap pool count ${swapPools.length}`)
+  // filter pool and token that can form route (consider route of 1 / 2 pool only)
+  // seperate direct pool and indirect pool
+  const poolGroups = Object.groupBy(swapPools, p =>
+    arrayContains(swapTokenAddresses, getTokenFromPool(p, 0).address) &&
+    arrayContains(swapTokenAddresses, getTokenFromPool(p, 1).address) ? 'directPoolAll' : 'indirectPoolAll'
+  )
+  const { directPoolAll = [], indirectPoolAll = [] } = poolGroups
+  // search for linked tokens for each target token
+  const linkedTokenSets = swapTokenAddresses.map(
+    tokenAddress => indirectPoolAll
+      .map(p => poolTokenIndexes.map(i => getTokenFromPool(p, i).address))
+      .filter(addresses => arrayContains(addresses, tokenAddress))
+      .map(addresses => addresses.find(addr => addr !== tokenAddress))
+      .filter(addr => addr != undefined) // TODO: this is for typing only
+  ).map(tokens => new Set(tokens))
+  // find interseaction
+  // FIXME: not sure why cannot setup es2024 in vscode
+  // const linkedTokensForRoute = linkedTokenSets[0].intersection(linkedTokenSets[1])
+  let linkedTokensForRoute = setIntersection(linkedTokenSets[0], linkedTokenSets[1])
+  // filter related pool
+  const indirectPool = indirectPoolAll.filter(p =>
+    linkedTokensForRoute.has(getTokenFromPool(p, 0).address) ||
+    linkedTokensForRoute.has(getTokenFromPool(p, 1).address)
+  )
+  return {
+    directPool: directPoolAll,
+    indirectPool,
+    linkedTokensForRoute,
+  }
+}
+
 async function main () {
   if (NODE_ENV == 'development') {
     // fund token for development
@@ -140,27 +196,42 @@ async function main () {
   // const swapPoolProvider = onChainSwapPoolProvider
   // const swapPools = await swapPoolProvider.getPoolForTokens(swapFrom, swapTo)
   // console.timeEnd('find swap pool')
-  // TODO: load pool cache from redis
-  const swapPoolDataRaw = require('./swap-pool/pools-wbnb-busd.json')
-  const swapPools = swapPoolDataRaw.map(Transformer.parsePool)
-  if (!swapPools || !swapPools.length) throw new Error('No pool is found')
-  logger.info(`swap pool count ${swapPools.length}`)
-  // draft attack plan
-  console.time('find attack')
-  const attackPlan = await arbitrage.findBestAttack(swapFromAmount, swapTo, swapPools, gasPriceWei)
-  console.timeEnd('find attack')
-  // logger.info(attackPlan, 'attackPlan')
-  logger.info(`attackPlan ${swapFromAmount.toFixed(5)} ${attackPlan.trades[0].outputAmount.toFixed(5)} ${attackPlan.trades[1].outputAmount.toFixed(5)}`)
-  logger.info(`tokenGain ${attackPlan.tokenGain.toFixed(5)}`)
-  // save current attack plan
-  await saveObject(attackPlan, './data/attackPlan.json')
-  // perform attack
-  // TODO: check attack plan profit
-  console.time('perform attack')
-  const result = await arbitrage.performAttack(attackPlan)
-  console.timeEnd('perform attack')
-  logger.info(`result ${result.hash}`);
-  logger.info(`${result.nativeCurrencyChange.toFixed(5)} ${result.tokenGain.toFixed(5)}`)
+  const { directPool, indirectPool, linkedTokensForRoute } = await fetchAndFilterPool()
+
+  while (true) { // TODO: stop condition for refreshing pool
+    // random select limited linked tokens
+    const selectedTokens = new Set(randomSelect([...linkedTokensForRoute], LINKED_TOKEN_PICK))
+    // const selectedTokens = new Set(randomSelect([...linkedTokensForRoute], 1))
+    const usingIndirectPool = indirectPool.filter(p =>
+      selectedTokens.has(getTokenFromPool(p, 0).address) ||
+      selectedTokens.has(getTokenFromPool(p, 1).address)
+    )
+    //
+    const swapPools = [...directPool, ...usingIndirectPool]
+    logger.info(`swapPools ${swapPools.length}`)
+    // draft attack plan
+    console.time('find attack')
+    const attackPlan = await arbitrage.findBestAttack(swapFromAmount, swapTo, swapPools, gasPriceWei)
+    console.timeEnd('find attack')
+    if (!attackPlan) continue
+    // logger.info(attackPlan, 'attackPlan')
+    logAttackPlan(attackPlan)
+    logger.info(`currency amount ${swapFromAmount.toFixed(5)} ${attackPlan.trades[0].outputAmount.toFixed(5)} ${attackPlan.trades[1].outputAmount.toFixed(5)}`)
+    // TODO: perform attack on another async op / thread
+    if (attackPlan.tokenGain.numerator > 0) {
+      logger.info(`can perform attack`)
+      // save current attack plan
+      saveObject(attackPlan, './data/attackPlan.json')
+      // perform attack
+      // TODO: check attack plan profit
+      // console.time('perform attack')
+      // const result = await arbitrage.performAttack(attackPlan)
+      // console.timeEnd('perform attack')
+      // logger.info(`result ${result.hash}`);
+      // logger.info(`${result.nativeCurrencyChange.toFixed(5)} ${result.tokenGain.toFixed(5)}`)
+    }
+    // TODO: delay for scanning interval
+  }
 }
 
 main()

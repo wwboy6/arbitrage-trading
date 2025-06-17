@@ -13,13 +13,13 @@ importers:
         version: 5.3.0
       '@pancakeswap/sdk':
         specifier: ^5.8.14
-        version: 5.8.14(typescript@5.8.3)(zod@3.25.58)
+        version: 5.8.14(typescript@5.9.0-dev.20250616)(zod@3.25.58)
       '@pancakeswap/smart-router':
         specifier: ^7.2.5
-        version: 7.2.5(typescript@5.8.3)
+        version: 7.2.5(typescript@5.9.0-dev.20250616)
       '@pancakeswap/tokens':
         specifier: ^0.7.5
-        version: 0.7.5(typescript@5.8.3)(zod@3.25.58)
+        version: 0.7.5(typescript@5.9.0-dev.20250616)(zod@3.25.58)
       '@pancakeswap/v3-sdk':
         specifier: ^3.9.3
         version: 3.9.3(typescript@5.8.3)(zod@3.25.58)
@@ -58,7 +58,7 @@ importers:
         version: 5.5.6
       viem:
         specifier: ^2.31.0
-        version: 2.31.0(typescript@5.8.3)(zod@3.25.58)
+        version: 2.31.0(typescript@5.9.0-dev.20250616)(zod@3.25.58)
       zod:
         specifier: ^3.25.58
         version: 3.25.58
@@ -71,10 +71,10 @@ importers:
         version: 4.0.11
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.34.0
-        version: 8.34.0(@typescript-eslint/parser@8.34.0(eslint@9.28.0)(typescript@5.8.3))(eslint@9.28.0)(typescript@5.8.3)
+        version: 8.34.0(@typescript-eslint/parser@8.34.0(eslint@9.28.0)(typescript@5.9.0-dev.20250616))(eslint@9.28.0)(typescript@5.9.0-dev.20250616)
       '@typescript-eslint/parser':
         specifier: ^8.34.0
-        version: 8.34.0(eslint@9.28.0)(typescript@5.8.3)
+        version: 8.34.0(eslint@9.28.0)(typescript@5.9.0-dev.20250616)
       eslint:
         specifier: ^9.28.0
         version: 9.28.0
@@ -86,10 +86,10 @@ importers:
         version: 3.5.3
       ts-node:
         specifier: ^10.9.2
-        version: 10.9.2(@types/node@24.0.0)(typescript@5.8.3)
+        version: 10.9.2(@types/node@24.0.3)(typescript@5.9.0-dev.20250616)
       ts-node-dev:
         specifier: ^2.0.0
-        version: 2.0.0(@types/node@24.0.0)(typescript@5.8.3)
+        version: 2.0.0(@types/node@24.0.3)(typescript@5.9.0-dev.20250616)
 
 packages:
 
@@ -319,8 +319,8 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
-  '@types/node@24.0.0':
-    resolution: {integrity: sha512-yZQa2zm87aRVcqDyH5+4Hv9KYgSdgwX1rFnGvpbzMaC7YAljmhBET93TPiTd3ObwTL+gSpIzPKg5BqVxdCvxKg==}
+  '@types/node@24.0.3':
+    resolution: {integrity: sha512-R4I/kzCYAdRLzfiCabn9hxWfbuHS573x+r0dJMkkzThEa7pbrcDWK+9zu3e7aBOouf+rQAciqPFMnxwr0aWgKg==}
 
   '@types/redis@4.0.11':
     resolution: {integrity: sha512-bI+gth8La8Wg/QCR1+V1fhrL9+LZUSWfcqpOj2Kc80ZQ4ffbdL173vQd5wovmoV9i071FU9oP2g6etLuEwb6Rg==}
@@ -1190,6 +1190,11 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  typescript@5.9.0-dev.20250616:
+    resolution: {integrity: sha512-TdYn1diKBbeAZIOI2A23QYCVrMdwj4AhDPE9kdenLxqVFVfFB+CADDXUi+4f91RQie1QEw6RcmmL32FXu7jE+Q==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
   undici-types@7.8.0:
     resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
 
@@ -1358,12 +1363,12 @@ snapshots:
 
   '@pancakeswap/chains@0.5.2': {}
 
-  '@pancakeswap/gauges@2.0.12(typescript@5.8.3)(zod@3.25.58)':
+  '@pancakeswap/gauges@2.0.12(typescript@5.9.0-dev.20250616)(zod@3.25.58)':
     dependencies:
       '@pancakeswap/chains': 0.5.2
-      '@pancakeswap/tokens': 0.7.5(typescript@5.8.3)(zod@3.25.58)
-      '@pancakeswap/v3-sdk': 3.9.3(typescript@5.8.3)(zod@3.25.58)
-      viem: 2.31.0(typescript@5.8.3)(zod@3.25.58)
+      '@pancakeswap/tokens': 0.7.5(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      '@pancakeswap/v3-sdk': 3.9.3(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      viem: 2.31.0(typescript@5.9.0-dev.20250616)(zod@3.25.58)
     transitivePeerDependencies:
       - '@reduxjs/toolkit'
       - bufferutil
@@ -1374,38 +1379,38 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@pancakeswap/infinity-sdk@1.0.2(typescript@5.8.3)(zod@3.25.58)':
+  '@pancakeswap/infinity-sdk@1.0.2(typescript@5.9.0-dev.20250616)(zod@3.25.58)':
     dependencies:
       '@pancakeswap/chains': 0.5.2
-      '@pancakeswap/permit2-sdk': 1.1.3(typescript@5.8.3)(zod@3.25.58)
+      '@pancakeswap/permit2-sdk': 1.1.3(typescript@5.9.0-dev.20250616)(zod@3.25.58)
       '@pancakeswap/swap-sdk-core': 1.4.0
-      '@pancakeswap/v3-sdk': 3.9.3(typescript@5.8.3)(zod@3.25.58)
+      '@pancakeswap/v3-sdk': 3.9.3(typescript@5.9.0-dev.20250616)(zod@3.25.58)
       bignumber.js: 9.3.0
       tiny-invariant: 1.3.3
-      viem: 2.31.0(typescript@5.8.3)(zod@3.25.58)
+      viem: 2.31.0(typescript@5.9.0-dev.20250616)(zod@3.25.58)
     transitivePeerDependencies:
       - bufferutil
       - typescript
       - utf-8-validate
       - zod
 
-  '@pancakeswap/multicall@3.6.4(typescript@5.8.3)(zod@3.25.58)':
+  '@pancakeswap/multicall@3.6.4(typescript@5.9.0-dev.20250616)(zod@3.25.58)':
     dependencies:
       '@pancakeswap/chains': 0.5.2
-      '@pancakeswap/sdk': 5.8.14(typescript@5.8.3)(zod@3.25.58)
-      viem: 2.31.0(typescript@5.8.3)(zod@3.25.58)
+      '@pancakeswap/sdk': 5.8.14(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      viem: 2.31.0(typescript@5.9.0-dev.20250616)(zod@3.25.58)
     transitivePeerDependencies:
       - bufferutil
       - typescript
       - utf-8-validate
       - zod
 
-  '@pancakeswap/permit2-sdk@1.1.3(typescript@5.8.3)(zod@3.25.58)':
+  '@pancakeswap/permit2-sdk@1.1.3(typescript@5.9.0-dev.20250616)(zod@3.25.58)':
     dependencies:
       '@pancakeswap/chains': 0.5.2
-      '@pancakeswap/sdk': 5.8.14(typescript@5.8.3)(zod@3.25.58)
+      '@pancakeswap/sdk': 5.8.14(typescript@5.9.0-dev.20250616)(zod@3.25.58)
       tiny-invariant: 1.3.3
-      viem: 2.31.0(typescript@5.8.3)(zod@3.25.58)
+      viem: 2.31.0(typescript@5.9.0-dev.20250616)(zod@3.25.58)
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -1430,18 +1435,36 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@pancakeswap/smart-router@7.2.5(typescript@5.8.3)':
+  '@pancakeswap/sdk@5.8.14(typescript@5.9.0-dev.20250616)(zod@3.25.58)':
     dependencies:
       '@pancakeswap/chains': 0.5.2
-      '@pancakeswap/gauges': 2.0.12(typescript@5.8.3)(zod@3.25.58)
-      '@pancakeswap/infinity-sdk': 1.0.2(typescript@5.8.3)(zod@3.25.58)
-      '@pancakeswap/multicall': 3.6.4(typescript@5.8.3)(zod@3.25.58)
-      '@pancakeswap/sdk': 5.8.14(typescript@5.8.3)(zod@3.25.58)
-      '@pancakeswap/stable-swap-sdk': 2.0.6(typescript@5.8.3)(zod@3.25.58)
+      '@pancakeswap/swap-sdk-core': 1.4.0
+      '@pancakeswap/swap-sdk-evm': 1.1.3(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      '@pancakeswap/v2-sdk': 1.1.3(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      big.js: 5.2.2
+      decimal.js-light: 2.5.1
+      tiny-invariant: 1.3.3
+      tiny-warning: 1.0.3
+      toformat: 2.0.0
+      viem: 2.31.0(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+      - zod
+
+  '@pancakeswap/smart-router@7.2.5(typescript@5.9.0-dev.20250616)':
+    dependencies:
+      '@pancakeswap/chains': 0.5.2
+      '@pancakeswap/gauges': 2.0.12(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      '@pancakeswap/infinity-sdk': 1.0.2(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      '@pancakeswap/multicall': 3.6.4(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      '@pancakeswap/sdk': 5.8.14(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      '@pancakeswap/stable-swap-sdk': 2.0.6(typescript@5.9.0-dev.20250616)(zod@3.25.58)
       '@pancakeswap/swap-sdk-core': 1.4.0
       '@pancakeswap/token-lists': 0.0.15
-      '@pancakeswap/tokens': 0.7.5(typescript@5.8.3)(zod@3.25.58)
-      '@pancakeswap/v3-sdk': 3.9.3(typescript@5.8.3)(zod@3.25.58)
+      '@pancakeswap/tokens': 0.7.5(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      '@pancakeswap/v3-sdk': 3.9.3(typescript@5.9.0-dev.20250616)(zod@3.25.58)
       async-retry: 1.3.3
       debug: 4.4.1
       graphql: 16.11.0
@@ -1450,7 +1473,7 @@ snapshots:
       mnemonist: 0.38.5
       stats-lite: 2.2.0
       tiny-invariant: 1.3.3
-      viem: 2.31.0(typescript@5.8.3)(zod@3.25.58)
+      viem: 2.31.0(typescript@5.9.0-dev.20250616)(zod@3.25.58)
       zod: 3.25.58
     transitivePeerDependencies:
       - '@reduxjs/toolkit'
@@ -1463,11 +1486,11 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@pancakeswap/stable-swap-sdk@2.0.6(typescript@5.8.3)(zod@3.25.58)':
+  '@pancakeswap/stable-swap-sdk@2.0.6(typescript@5.9.0-dev.20250616)(zod@3.25.58)':
     dependencies:
       '@pancakeswap/chains': 0.5.2
       '@pancakeswap/swap-sdk-core': 1.4.0
-      '@pancakeswap/tokens': 0.7.5(typescript@5.8.3)(zod@3.25.58)
+      '@pancakeswap/tokens': 0.7.5(typescript@5.9.0-dev.20250616)(zod@3.25.58)
       tiny-invariant: 1.3.3
     transitivePeerDependencies:
       - '@reduxjs/toolkit'
@@ -1500,16 +1523,29 @@ snapshots:
       - utf-8-validate
       - zod
 
+  '@pancakeswap/swap-sdk-evm@1.1.3(typescript@5.9.0-dev.20250616)(zod@3.25.58)':
+    dependencies:
+      '@pancakeswap/chains': 0.5.2
+      '@pancakeswap/swap-sdk-core': 1.4.0
+      tiny-invariant: 1.3.3
+      tiny-warning: 1.0.3
+      viem: 2.31.0(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+      - zod
+
   '@pancakeswap/token-lists@0.0.15':
     dependencies:
       '@pancakeswap/swap-sdk-core': 1.4.0
       ajv: 6.12.6
       lodash: 4.17.21
 
-  '@pancakeswap/tokens@0.7.5(typescript@5.8.3)(zod@3.25.58)':
+  '@pancakeswap/tokens@0.7.5(typescript@5.9.0-dev.20250616)(zod@3.25.58)':
     dependencies:
       '@pancakeswap/chains': 0.5.2
-      '@pancakeswap/sdk': 5.8.14(typescript@5.8.3)(zod@3.25.58)
+      '@pancakeswap/sdk': 5.8.14(typescript@5.9.0-dev.20250616)(zod@3.25.58)
       '@pancakeswap/token-lists': 0.0.15
     transitivePeerDependencies:
       - '@reduxjs/toolkit'
@@ -1534,6 +1570,19 @@ snapshots:
       - utf-8-validate
       - zod
 
+  '@pancakeswap/v2-sdk@1.1.3(typescript@5.9.0-dev.20250616)(zod@3.25.58)':
+    dependencies:
+      '@pancakeswap/chains': 0.5.2
+      '@pancakeswap/swap-sdk-core': 1.4.0
+      '@pancakeswap/swap-sdk-evm': 1.1.3(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      tiny-invariant: 1.3.3
+      viem: 2.31.0(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+      - zod
+
   '@pancakeswap/v3-sdk@3.9.3(typescript@5.8.3)(zod@3.25.58)':
     dependencies:
       '@pancakeswap/chains': 0.5.2
@@ -1545,6 +1594,23 @@ snapshots:
       tiny-warning: 1.0.3
       toformat: 2.0.0
       viem: 2.31.0(typescript@5.8.3)(zod@3.25.58)
+    transitivePeerDependencies:
+      - bufferutil
+      - typescript
+      - utf-8-validate
+      - zod
+
+  '@pancakeswap/v3-sdk@3.9.3(typescript@5.9.0-dev.20250616)(zod@3.25.58)':
+    dependencies:
+      '@pancakeswap/chains': 0.5.2
+      '@pancakeswap/sdk': 5.8.14(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      '@pancakeswap/swap-sdk-core': 1.4.0
+      big.js: 5.2.2
+      decimal.js-light: 2.5.1
+      tiny-invariant: 1.3.3
+      tiny-warning: 1.0.3
+      toformat: 2.0.0
+      viem: 2.31.0(typescript@5.9.0-dev.20250616)(zod@3.25.58)
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -1598,7 +1664,7 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
-  '@types/node@24.0.0':
+  '@types/node@24.0.3':
     dependencies:
       undici-types: 7.8.0
 
@@ -1610,41 +1676,41 @@ snapshots:
 
   '@types/strip-json-comments@0.0.30': {}
 
-  '@typescript-eslint/eslint-plugin@8.34.0(@typescript-eslint/parser@8.34.0(eslint@9.28.0)(typescript@5.8.3))(eslint@9.28.0)(typescript@5.8.3)':
+  '@typescript-eslint/eslint-plugin@8.34.0(@typescript-eslint/parser@8.34.0(eslint@9.28.0)(typescript@5.9.0-dev.20250616))(eslint@9.28.0)(typescript@5.9.0-dev.20250616)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.34.0(eslint@9.28.0)(typescript@5.8.3)
+      '@typescript-eslint/parser': 8.34.0(eslint@9.28.0)(typescript@5.9.0-dev.20250616)
       '@typescript-eslint/scope-manager': 8.34.0
-      '@typescript-eslint/type-utils': 8.34.0(eslint@9.28.0)(typescript@5.8.3)
-      '@typescript-eslint/utils': 8.34.0(eslint@9.28.0)(typescript@5.8.3)
+      '@typescript-eslint/type-utils': 8.34.0(eslint@9.28.0)(typescript@5.9.0-dev.20250616)
+      '@typescript-eslint/utils': 8.34.0(eslint@9.28.0)(typescript@5.9.0-dev.20250616)
       '@typescript-eslint/visitor-keys': 8.34.0
       eslint: 9.28.0
       graphemer: 1.4.0
       ignore: 7.0.5
       natural-compare: 1.4.0
-      ts-api-utils: 2.1.0(typescript@5.8.3)
-      typescript: 5.8.3
+      ts-api-utils: 2.1.0(typescript@5.9.0-dev.20250616)
+      typescript: 5.9.0-dev.20250616
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.34.0(eslint@9.28.0)(typescript@5.8.3)':
+  '@typescript-eslint/parser@8.34.0(eslint@9.28.0)(typescript@5.9.0-dev.20250616)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.34.0
       '@typescript-eslint/types': 8.34.0
-      '@typescript-eslint/typescript-estree': 8.34.0(typescript@5.8.3)
+      '@typescript-eslint/typescript-estree': 8.34.0(typescript@5.9.0-dev.20250616)
       '@typescript-eslint/visitor-keys': 8.34.0
       debug: 4.4.1
       eslint: 9.28.0
-      typescript: 5.8.3
+      typescript: 5.9.0-dev.20250616
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/project-service@8.34.0(typescript@5.8.3)':
+  '@typescript-eslint/project-service@8.34.0(typescript@5.9.0-dev.20250616)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.34.0(typescript@5.8.3)
+      '@typescript-eslint/tsconfig-utils': 8.34.0(typescript@5.9.0-dev.20250616)
       '@typescript-eslint/types': 8.34.0
       debug: 4.4.1
-      typescript: 5.8.3
+      typescript: 5.9.0-dev.20250616
     transitivePeerDependencies:
       - supports-color
 
@@ -1653,27 +1719,27 @@ snapshots:
       '@typescript-eslint/types': 8.34.0
       '@typescript-eslint/visitor-keys': 8.34.0
 
-  '@typescript-eslint/tsconfig-utils@8.34.0(typescript@5.8.3)':
+  '@typescript-eslint/tsconfig-utils@8.34.0(typescript@5.9.0-dev.20250616)':
     dependencies:
-      typescript: 5.8.3
+      typescript: 5.9.0-dev.20250616
 
-  '@typescript-eslint/type-utils@8.34.0(eslint@9.28.0)(typescript@5.8.3)':
+  '@typescript-eslint/type-utils@8.34.0(eslint@9.28.0)(typescript@5.9.0-dev.20250616)':
     dependencies:
-      '@typescript-eslint/typescript-estree': 8.34.0(typescript@5.8.3)
-      '@typescript-eslint/utils': 8.34.0(eslint@9.28.0)(typescript@5.8.3)
+      '@typescript-eslint/typescript-estree': 8.34.0(typescript@5.9.0-dev.20250616)
+      '@typescript-eslint/utils': 8.34.0(eslint@9.28.0)(typescript@5.9.0-dev.20250616)
       debug: 4.4.1
       eslint: 9.28.0
-      ts-api-utils: 2.1.0(typescript@5.8.3)
-      typescript: 5.8.3
+      ts-api-utils: 2.1.0(typescript@5.9.0-dev.20250616)
+      typescript: 5.9.0-dev.20250616
     transitivePeerDependencies:
       - supports-color
 
   '@typescript-eslint/types@8.34.0': {}
 
-  '@typescript-eslint/typescript-estree@8.34.0(typescript@5.8.3)':
+  '@typescript-eslint/typescript-estree@8.34.0(typescript@5.9.0-dev.20250616)':
     dependencies:
-      '@typescript-eslint/project-service': 8.34.0(typescript@5.8.3)
-      '@typescript-eslint/tsconfig-utils': 8.34.0(typescript@5.8.3)
+      '@typescript-eslint/project-service': 8.34.0(typescript@5.9.0-dev.20250616)
+      '@typescript-eslint/tsconfig-utils': 8.34.0(typescript@5.9.0-dev.20250616)
       '@typescript-eslint/types': 8.34.0
       '@typescript-eslint/visitor-keys': 8.34.0
       debug: 4.4.1
@@ -1681,19 +1747,19 @@ snapshots:
       is-glob: 4.0.3
       minimatch: 9.0.5
       semver: 7.7.2
-      ts-api-utils: 2.1.0(typescript@5.8.3)
-      typescript: 5.8.3
+      ts-api-utils: 2.1.0(typescript@5.9.0-dev.20250616)
+      typescript: 5.9.0-dev.20250616
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.34.0(eslint@9.28.0)(typescript@5.8.3)':
+  '@typescript-eslint/utils@8.34.0(eslint@9.28.0)(typescript@5.9.0-dev.20250616)':
     dependencies:
       '@eslint-community/eslint-utils': 4.7.0(eslint@9.28.0)
       '@typescript-eslint/scope-manager': 8.34.0
       '@typescript-eslint/types': 8.34.0
-      '@typescript-eslint/typescript-estree': 8.34.0(typescript@5.8.3)
+      '@typescript-eslint/typescript-estree': 8.34.0(typescript@5.9.0-dev.20250616)
       eslint: 9.28.0
-      typescript: 5.8.3
+      typescript: 5.9.0-dev.20250616
     transitivePeerDependencies:
       - supports-color
 
@@ -1705,6 +1771,11 @@ snapshots:
   abitype@1.0.8(typescript@5.8.3)(zod@3.25.58):
     optionalDependencies:
       typescript: 5.8.3
+      zod: 3.25.58
+
+  abitype@1.0.8(typescript@5.9.0-dev.20250616)(zod@3.25.58):
+    optionalDependencies:
+      typescript: 5.9.0-dev.20250616
       zod: 3.25.58
 
   acorn-jsx@5.3.2(acorn@8.15.0):
@@ -2251,6 +2322,21 @@ snapshots:
     transitivePeerDependencies:
       - zod
 
+  ox@0.7.1(typescript@5.9.0-dev.20250616)(zod@3.25.58):
+    dependencies:
+      '@adraffy/ens-normalize': 1.11.0
+      '@noble/ciphers': 1.3.0
+      '@noble/curves': 1.9.1
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+      abitype: 1.0.8(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      eventemitter3: 5.0.1
+    optionalDependencies:
+      typescript: 5.9.0-dev.20250616
+    transitivePeerDependencies:
+      - zod
+
   p-limit@3.1.0:
     dependencies:
       yocto-queue: 0.1.0
@@ -2421,11 +2507,11 @@ snapshots:
 
   tree-kill@1.2.2: {}
 
-  ts-api-utils@2.1.0(typescript@5.8.3):
+  ts-api-utils@2.1.0(typescript@5.9.0-dev.20250616):
     dependencies:
-      typescript: 5.8.3
+      typescript: 5.9.0-dev.20250616
 
-  ts-node-dev@2.0.0(@types/node@24.0.0)(typescript@5.8.3):
+  ts-node-dev@2.0.0(@types/node@24.0.3)(typescript@5.9.0-dev.20250616):
     dependencies:
       chokidar: 3.6.0
       dynamic-dedupe: 0.3.0
@@ -2435,29 +2521,29 @@ snapshots:
       rimraf: 2.7.1
       source-map-support: 0.5.21
       tree-kill: 1.2.2
-      ts-node: 10.9.2(@types/node@24.0.0)(typescript@5.8.3)
+      ts-node: 10.9.2(@types/node@24.0.3)(typescript@5.9.0-dev.20250616)
       tsconfig: 7.0.0
-      typescript: 5.8.3
+      typescript: 5.9.0-dev.20250616
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
       - '@types/node'
 
-  ts-node@10.9.2(@types/node@24.0.0)(typescript@5.8.3):
+  ts-node@10.9.2(@types/node@24.0.3)(typescript@5.9.0-dev.20250616):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.11
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 24.0.0
+      '@types/node': 24.0.3
       acorn: 8.15.0
       acorn-walk: 8.3.4
       arg: 4.1.3
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 5.8.3
+      typescript: 5.9.0-dev.20250616
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
@@ -2472,7 +2558,10 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
 
-  typescript@5.8.3: {}
+  typescript@5.8.3:
+    optional: true
+
+  typescript@5.9.0-dev.20250616: {}
 
   undici-types@7.8.0: {}
 
@@ -2494,6 +2583,23 @@ snapshots:
       ws: 8.18.2
     optionalDependencies:
       typescript: 5.8.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+      - zod
+
+  viem@2.31.0(typescript@5.9.0-dev.20250616)(zod@3.25.58):
+    dependencies:
+      '@noble/curves': 1.9.1
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
+      abitype: 1.0.8(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      isows: 1.0.7(ws@8.18.2)
+      ox: 0.7.1(typescript@5.9.0-dev.20250616)(zod@3.25.58)
+      ws: 8.18.2
+    optionalDependencies:
+      typescript: 5.9.0-dev.20250616
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate

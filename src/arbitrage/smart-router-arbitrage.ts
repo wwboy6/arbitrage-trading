@@ -1,5 +1,5 @@
 import { Account, Chain, createWalletClient, http, PublicClient, WalletClient } from "viem";
-import { SmartRouter, SmartRouterTrade, SMART_ROUTER_ADDRESSES, SwapRouter, QuoteProvider, Pool, PoolType, Route, RouteType } from '@pancakeswap/smart-router'
+import { SmartRouter, SmartRouterTrade, SMART_ROUTER_ADDRESSES, SwapRouter, QuoteProvider, Pool, Route, RouteType } from '@pancakeswap/smart-router'
 import { ChainId, Currency, CurrencyAmount, ERC20Token, Native, Percent, TradeType } from "@pancakeswap/sdk";
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import FlashLoanSmartRouterInfo from '../contract/FlashLoanSmartRouter.json'
@@ -41,49 +41,56 @@ export class SmartRouterArbitrage {
       transport: http(),
     })
     this.smartRouterAddress = SMART_ROUTER_ADDRESSES[chain.id as ChainId]
-    this.quoteProvider = SmartRouter.createOffChainQuoteProvider()
+    this.quoteProvider = SmartRouter.createQuoteProvider({
+      onChainProvider: () => chainClient,
+    })
   }
 
-  async findBestAttack(swapFromAmount: CurrencyAmount<ERC20Token>, swapTo: ERC20Token, swapPools: Pool[], gasPriceWei: bigint) : Promise<AttackPlan> { // TODO: return type
-    const swapFrom = swapFromAmount.currency
-    if (!swapPools || !swapPools.length) throw new Error('no pool')
-    // TODO: exclude some pools
-    // forward trade
-    const forwardTrade = await SmartRouter.getBestTrade(swapFromAmount, swapTo, TradeType.EXACT_INPUT, {
-      gasPriceWei,
-      maxHops: 2, // TODO: what is this?
-      maxSplits: 1, // TODO: what is this?
-      distributionPercent: 100, // reduce distribution for faster quotation
-      poolProvider: SmartRouter.createStaticPoolProvider(swapPools),
-      quoteProvider: this.quoteProvider,
-      quoterOptimization: true,
-    })
-    if (!forwardTrade) throw new Error('no forward trade is found')
-    // prepare for backward trade
-    // exclude pools used in foward trade
-    const pools = forwardTrade.routes.map(r => r.pools).flat()
-    // FIXME: use universal identifier
-    const poolAddresses = new Set(pools.map(p => (p as any).address))
-    const swapPools2 = swapPools.filter((p : any) => !poolAddresses.has(p.address) )
-    // backward trade
-    // FIXME: getBestTrade for V2 may not compatable with Uniswap pair
-    const backwardTrade = await SmartRouter.getBestTrade(forwardTrade.outputAmount, swapFrom, TradeType.EXACT_INPUT, {
-      gasPriceWei,
-      maxHops: 2,
-      maxSplits: 1, // TODO:
-      distributionPercent: 100,
-      poolProvider: SmartRouter.createStaticPoolProvider(swapPools2),
-      quoteProvider: this.quoteProvider,
-      quoterOptimization: true,
-    })
-    if (!backwardTrade) throw new Error('no backward trade is found')
-    // evaluate attack
-    const tokenGain : CurrencyAmount<ERC20Token> = backwardTrade.outputAmount.subtract(swapFromAmount) as any
-    return {
-      swapFromAmount,
-      swapTo,
-      trades: [forwardTrade, backwardTrade],
-      tokenGain,
+  async findBestAttack(swapFromAmount: CurrencyAmount<ERC20Token>, swapTo: ERC20Token, swapPools: Pool[], gasPriceWei: bigint) : Promise<AttackPlan | null> { // TODO: return type
+    try {
+      const swapFrom = swapFromAmount.currency
+      if (!swapPools || !swapPools.length) throw new Error('no pool')
+      // TODO: exclude some pools
+      // forward trade
+      const forwardTrade = await SmartRouter.getBestTrade(swapFromAmount, swapTo, TradeType.EXACT_INPUT, {
+        gasPriceWei,
+        maxHops: 2, // TODO: what is this?
+        maxSplits: 1, // TODO: what is this?
+        distributionPercent: 100, // reduce distribution for faster quotation
+        poolProvider: SmartRouter.createStaticPoolProvider(swapPools),
+        quoteProvider: this.quoteProvider,
+        quoterOptimization: true,
+      })
+      if (!forwardTrade) throw new Error('no forward trade is found')
+      // prepare for backward trade
+      // exclude pools used in foward trade
+      const pools = forwardTrade.routes.map(r => r.pools).flat()
+      // FIXME: use universal identifier
+      const poolAddresses = new Set(pools.map(p => (p as any).address))
+      const swapPools2 = swapPools.filter((p : any) => !poolAddresses.has(p.address) )
+      // backward trade
+      // FIXME: getBestTrade for V2 may not compatable with Uniswap pair
+      const backwardTrade = await SmartRouter.getBestTrade(forwardTrade.outputAmount, swapFrom, TradeType.EXACT_INPUT, {
+        gasPriceWei,
+        maxHops: 2,
+        maxSplits: 1, // TODO:
+        distributionPercent: 100,
+        poolProvider: SmartRouter.createStaticPoolProvider(swapPools2),
+        quoteProvider: this.quoteProvider,
+        quoterOptimization: true,
+      })
+      if (!backwardTrade) throw new Error('no backward trade is found')
+      // evaluate attack
+      const tokenGain : CurrencyAmount<ERC20Token> = backwardTrade.outputAmount.subtract(swapFromAmount) as any
+      return {
+        swapFromAmount,
+        swapTo,
+        trades: [forwardTrade, backwardTrade],
+        tokenGain,
+      }
+    } catch (e: any) {
+      if (e.message === 'Cannot find a valid swap route') return null
+      throw e
     }
   }
 
