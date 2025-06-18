@@ -1,0 +1,540 @@
+{
+  "swapFromAmount": {
+    "numerator": {
+      "_type": "bigint",
+      "_value": "1000000000000000000"
+    },
+    "denominator": {
+      "_type": "bigint",
+      "_value": "1"
+    },
+    "currency": {
+      "chainId": 56,
+      "decimals": 18,
+      "symbol": "WBNB",
+      "name": "Wrapped BNB",
+      "isNative": false,
+      "isToken": true,
+      "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+      "projectLink": "https://www.binance.org"
+    },
+    "decimalScale": {
+      "_type": "bigint",
+      "_value": "1000000000000000000"
+    }
+  },
+  "swapTo": {
+    "chainId": 56,
+    "decimals": 18,
+    "symbol": "BUSD",
+    "name": "Binance USD",
+    "isNative": false,
+    "isToken": true,
+    "address": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+    "projectLink": "https://www.paxos.com/busd/"
+  },
+  "trades": [
+    {
+      "tradeType": 0,
+      "routes": [
+        {
+          "percent": 100,
+          "type": 0,
+          "pools": [
+            {
+              "type": 0,
+              "reserve0": {
+                "numerator": {
+                  "_type": "bigint",
+                  "_value": "6844815339307372979218"
+                },
+                "denominator": {
+                  "_type": "bigint",
+                  "_value": "1"
+                },
+                "currency": {
+                  "chainId": 56,
+                  "decimals": 18,
+                  "symbol": "WBNB",
+                  "name": "Wrapped BNB",
+                  "isNative": false,
+                  "isToken": true,
+                  "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+                  "projectLink": "https://www.binance.org"
+                },
+                "decimalScale": {
+                  "_type": "bigint",
+                  "_value": "1000000000000000000"
+                }
+              },
+              "reserve1": {
+                "numerator": {
+                  "_type": "bigint",
+                  "_value": "4469166147316955981615666"
+                },
+                "denominator": {
+                  "_type": "bigint",
+                  "_value": "1"
+                },
+                "currency": {
+                  "chainId": 56,
+                  "decimals": 18,
+                  "symbol": "BUSD",
+                  "name": "Binance USD",
+                  "isNative": false,
+                  "isToken": true,
+                  "address": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+                  "projectLink": "https://www.paxos.com/busd/"
+                },
+                "decimalScale": {
+                  "_type": "bigint",
+                  "_value": "1000000000000000000"
+                }
+              },
+              "address": "0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16"
+            }
+          ],
+          "path": [
+            {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "WBNB",
+              "name": "Wrapped BNB",
+              "isNative": false,
+              "isToken": true,
+              "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+              "projectLink": "https://www.binance.org"
+            },
+            {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "BUSD",
+              "name": "Binance USD",
+              "isNative": false,
+              "isToken": true,
+              "address": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+              "projectLink": "https://www.paxos.com/busd/"
+            }
+          ],
+          "inputAmount": {
+            "numerator": {
+              "_type": "bigint",
+              "_value": "100000000000000000000"
+            },
+            "denominator": {
+              "_type": "bigint",
+              "_value": "100"
+            },
+            "currency": {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "WBNB",
+              "name": "Wrapped BNB",
+              "isNative": false,
+              "isToken": true,
+              "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+              "projectLink": "https://www.binance.org"
+            },
+            "decimalScale": {
+              "_type": "bigint",
+              "_value": "1000000000000000000"
+            }
+          },
+          "outputAmount": {
+            "numerator": {
+              "_type": "bigint",
+              "_value": "651199986998140355030"
+            },
+            "denominator": {
+              "_type": "bigint",
+              "_value": "1"
+            },
+            "currency": {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "BUSD",
+              "name": "Binance USD",
+              "isNative": false,
+              "isToken": true,
+              "address": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+              "projectLink": "https://www.paxos.com/busd/"
+            },
+            "decimalScale": {
+              "_type": "bigint",
+              "_value": "1000000000000000000"
+            }
+          }
+        }
+      ],
+      "gasEstimate": {
+        "_type": "bigint",
+        "_value": "166000"
+      },
+      "gasEstimateInUSD": {
+        "numerator": {
+          "_type": "bigint",
+          "_value": "10845088624969561"
+        },
+        "denominator": {
+          "_type": "bigint",
+          "_value": "1"
+        },
+        "currency": {
+          "chainId": 56,
+          "decimals": 18,
+          "symbol": "USDT",
+          "name": "Tether USD",
+          "isNative": false,
+          "isToken": true,
+          "address": "0x55d398326f99059fF775485246999027B3197955",
+          "projectLink": "https://tether.to/"
+        },
+        "decimalScale": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        }
+      },
+      "inputAmount": {
+        "numerator": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        },
+        "denominator": {
+          "_type": "bigint",
+          "_value": "1"
+        },
+        "currency": {
+          "chainId": 56,
+          "decimals": 18,
+          "symbol": "WBNB",
+          "name": "Wrapped BNB",
+          "isNative": false,
+          "isToken": true,
+          "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+          "projectLink": "https://www.binance.org"
+        },
+        "decimalScale": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        }
+      },
+      "outputAmount": {
+        "numerator": {
+          "_type": "bigint",
+          "_value": "651199986998140355030"
+        },
+        "denominator": {
+          "_type": "bigint",
+          "_value": "1"
+        },
+        "currency": {
+          "chainId": 56,
+          "decimals": 18,
+          "symbol": "BUSD",
+          "name": "Binance USD",
+          "isNative": false,
+          "isToken": true,
+          "address": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+          "projectLink": "https://www.paxos.com/busd/"
+        },
+        "decimalScale": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        }
+      }
+    },
+    {
+      "tradeType": 0,
+      "routes": [
+        {
+          "percent": 100,
+          "type": 1,
+          "pools": [
+            {
+              "type": 1,
+              "token0": {
+                "chainId": 56,
+                "decimals": 18,
+                "symbol": "USDT",
+                "isNative": false,
+                "isToken": true,
+                "address": "0x55d398326f99059fF775485246999027B3197955"
+              },
+              "token1": {
+                "chainId": 56,
+                "decimals": 18,
+                "symbol": "BUSD",
+                "isNative": false,
+                "isToken": true,
+                "address": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56"
+              },
+              "address": "0x4f3126d5DE26413AbDCF6948943FB9D0847d9818",
+              "fee": 100,
+              "liquidity": {
+                "_type": "bigint",
+                "_value": "0"
+              },
+              "sqrtRatioX96": {
+                "_type": "bigint",
+                "_value": "0"
+              },
+              "token0ProtocolFee": {
+                "numerator": {
+                  "_type": "bigint",
+                  "_value": "0"
+                },
+                "denominator": {
+                  "_type": "bigint",
+                  "_value": "100"
+                },
+                "isPercent": true
+              },
+              "token1ProtocolFee": {
+                "numerator": {
+                  "_type": "bigint",
+                  "_value": "0"
+                },
+                "denominator": {
+                  "_type": "bigint",
+                  "_value": "100"
+                },
+                "isPercent": true
+              },
+              "tvlUSD": 1798721.0475675245
+            },
+            {
+              "type": 1,
+              "token0": {
+                "chainId": 56,
+                "decimals": 18,
+                "symbol": "USDT",
+                "isNative": false,
+                "isToken": true,
+                "address": "0x55d398326f99059fF775485246999027B3197955"
+              },
+              "token1": {
+                "chainId": 56,
+                "decimals": 18,
+                "symbol": "WBNB",
+                "isNative": false,
+                "isToken": true,
+                "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
+              },
+              "address": "0x172fcD41E0913e95784454622d1c3724f546f849",
+              "fee": 100,
+              "liquidity": {
+                "_type": "bigint",
+                "_value": "0"
+              },
+              "sqrtRatioX96": {
+                "_type": "bigint",
+                "_value": "0"
+              },
+              "token0ProtocolFee": {
+                "numerator": {
+                  "_type": "bigint",
+                  "_value": "0"
+                },
+                "denominator": {
+                  "_type": "bigint",
+                  "_value": "100"
+                },
+                "isPercent": true
+              },
+              "token1ProtocolFee": {
+                "numerator": {
+                  "_type": "bigint",
+                  "_value": "0"
+                },
+                "denominator": {
+                  "_type": "bigint",
+                  "_value": "100"
+                },
+                "isPercent": true
+              },
+              "tvlUSD": 25076501.654978
+            }
+          ],
+          "path": [
+            {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "BUSD",
+              "name": "Binance USD",
+              "isNative": false,
+              "isToken": true,
+              "address": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+              "projectLink": "https://www.paxos.com/busd/"
+            },
+            {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "USDT",
+              "isNative": false,
+              "isToken": true,
+              "address": "0x55d398326f99059fF775485246999027B3197955"
+            },
+            {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "WBNB",
+              "name": "Wrapped BNB",
+              "isNative": false,
+              "isToken": true,
+              "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+              "projectLink": "https://www.binance.org"
+            }
+          ],
+          "inputAmount": {
+            "numerator": {
+              "_type": "bigint",
+              "_value": "65119998699814035503000"
+            },
+            "denominator": {
+              "_type": "bigint",
+              "_value": "100"
+            },
+            "currency": {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "BUSD",
+              "name": "Binance USD",
+              "isNative": false,
+              "isToken": true,
+              "address": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+              "projectLink": "https://www.paxos.com/busd/"
+            },
+            "decimalScale": {
+              "_type": "bigint",
+              "_value": "1000000000000000000"
+            }
+          },
+          "outputAmount": {
+            "numerator": {
+              "_type": "bigint",
+              "_value": "1000061890340476114"
+            },
+            "denominator": {
+              "_type": "bigint",
+              "_value": "1"
+            },
+            "currency": {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "WBNB",
+              "name": "Wrapped BNB",
+              "isNative": false,
+              "isToken": true,
+              "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+              "projectLink": "https://www.binance.org"
+            },
+            "decimalScale": {
+              "_type": "bigint",
+              "_value": "1000000000000000000"
+            }
+          }
+        }
+      ],
+      "gasEstimate": {
+        "_type": "bigint",
+        "_value": "224000"
+      },
+      "gasEstimateInUSD": {
+        "numerator": {
+          "_type": "bigint",
+          "_value": "14634336457790251"
+        },
+        "denominator": {
+          "_type": "bigint",
+          "_value": "1"
+        },
+        "currency": {
+          "chainId": 56,
+          "decimals": 18,
+          "symbol": "USDT",
+          "name": "Tether USD",
+          "isNative": false,
+          "isToken": true,
+          "address": "0x55d398326f99059fF775485246999027B3197955",
+          "projectLink": "https://tether.to/"
+        },
+        "decimalScale": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        }
+      },
+      "inputAmount": {
+        "numerator": {
+          "_type": "bigint",
+          "_value": "651199986998140355030"
+        },
+        "denominator": {
+          "_type": "bigint",
+          "_value": "1"
+        },
+        "currency": {
+          "chainId": 56,
+          "decimals": 18,
+          "symbol": "BUSD",
+          "name": "Binance USD",
+          "isNative": false,
+          "isToken": true,
+          "address": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+          "projectLink": "https://www.paxos.com/busd/"
+        },
+        "decimalScale": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        }
+      },
+      "outputAmount": {
+        "numerator": {
+          "_type": "bigint",
+          "_value": "1000061890340476114"
+        },
+        "denominator": {
+          "_type": "bigint",
+          "_value": "1"
+        },
+        "currency": {
+          "chainId": 56,
+          "decimals": 18,
+          "symbol": "WBNB",
+          "name": "Wrapped BNB",
+          "isNative": false,
+          "isToken": true,
+          "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+          "projectLink": "https://www.binance.org"
+        },
+        "decimalScale": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        }
+      }
+    }
+  ],
+  "tokenGain": {
+    "numerator": {
+      "_type": "bigint",
+      "_value": "61890340476114"
+    },
+    "denominator": {
+      "_type": "bigint",
+      "_value": "1"
+    },
+    "currency": {
+      "chainId": 56,
+      "decimals": 18,
+      "symbol": "WBNB",
+      "name": "Wrapped BNB",
+      "isNative": false,
+      "isToken": true,
+      "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+      "projectLink": "https://www.binance.org"
+    },
+    "decimalScale": {
+      "_type": "bigint",
+      "_value": "1000000000000000000"
+    }
+  }
+}
