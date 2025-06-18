@@ -75,7 +75,7 @@ async function main() {
   })
   // TODO: save to redis
   const tokenPairKey = `${TOKEN0.toLocaleLowerCase()}-${TOKEN1.toLocaleLowerCase()}`
-  await fs.writeFile(`./src/swap-pool/pools-${tokenPairKey}.json`, JSON.stringify(saveData), { encoding: 'utf8' })
+  await fs.writeFile(`./data/${tokenPairKey}/pools-${tokenPairKey}.json`, JSON.stringify(saveData), { encoding: 'utf8' })
 }
 
 main()
