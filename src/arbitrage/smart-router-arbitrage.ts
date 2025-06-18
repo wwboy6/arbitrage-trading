@@ -24,16 +24,16 @@ export type AttackResult = {
 export class SmartRouterArbitrage {
   chainClient: PublicClient;
   account: Account;
-  flashLoadSmartRouterAddress: `0x${string}`;
+  pancakeswapArbitrageAddress: `0x${string}`;
   nativeCurrency: Native;
   walletClient: WalletClient;
   smartRouterAddress: string;
   quoteProvider: QuoteProvider;
 
-  constructor(chain: Chain, chainClient: PublicClient, account: Account, flashLoadSmartRouterAddress: `0x${string}`) {
+  constructor(chain: Chain, chainClient: PublicClient, account: Account, pancakeswapArbitrageAddress: `0x${string}`) {
     this.chainClient = chainClient
     this.account = account
-    this.flashLoadSmartRouterAddress = flashLoadSmartRouterAddress
+    this.pancakeswapArbitrageAddress = pancakeswapArbitrageAddress
     this.nativeCurrency = Native.onChain(chain.id as ChainId)
     this.walletClient = createWalletClient({
       account,
@@ -100,7 +100,7 @@ export class SmartRouterArbitrage {
     const calldatas = trades.map(t => {
       const trade = prepareTradeForCustomContract(t)
       const { calldata } = SwapRouter.swapCallParameters(trade, {
-        recipient: this.flashLoadSmartRouterAddress,
+        recipient: this.pancakeswapArbitrageAddress,
         slippageTolerance: new Percent(1), // TODO:
       })
       return calldata
@@ -114,16 +114,16 @@ export class SmartRouterArbitrage {
       address: swapFrom.address,
       abi: ERC20.abi,
       functionName: 'approve',
-      args: [this.flashLoadSmartRouterAddress, swapFromBalance],
+      args: [this.pancakeswapArbitrageAddress, swapFromBalance],
       account: this.account,
     })
     let hash = await this.walletClient.writeContract(req0)
     // TODO: run contract
     const { request: req1, result: res1 } = await this.chainClient.simulateContract({
       account: this.account,
-      address: this.flashLoadSmartRouterAddress,
+      address: this.pancakeswapArbitrageAddress,
       abi: FlashLoanSmartRouterInfo.abi,
-      functionName: "trade",
+      functionName: "attack",
       args: [swapFrom.address, swapFromBalance, calldatas[0], swapTo.address, calldatas[1]],
     })
     console.log(res1)

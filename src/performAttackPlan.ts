@@ -13,7 +13,7 @@ import { bestTradeExactInput } from "./swap-pool/trade"
 import { OnChainSwapPoolProvider } from "./swap-pool"
 const { SMART_ROUTER_ADDRESSES } = require('@pancakeswap/smart-router')
 
-const { PINO_LEVEL, PRIVATE_KEY, THE_GRAPH_KEY, FlashLoanSmartRouterAddress } = env
+const { PINO_LEVEL, PRIVATE_KEY, THE_GRAPH_KEY } = env
 const logger = pino({ level: PINO_LEVEL })
 
 const chain = defineChain({

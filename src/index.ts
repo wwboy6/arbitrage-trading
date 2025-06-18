@@ -23,7 +23,7 @@ import { setGlobalDispatcher, ProxyAgent } from "undici"
 import dayjs from "dayjs"
 import fs from 'fs/promises'
 
-const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, FlashLoanSmartRouterAddress, THE_GRAPH_KEY, RedisUrl, PROXY_URL, PREFERRED_TOKENS, V2_POOL_TOP, LINKED_TOKEN_PICK } = env
+const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, PancakeswapArbitrageAddress, THE_GRAPH_KEY, RedisUrl, PROXY_URL, PREFERRED_TOKENS, V2_POOL_TOP, LINKED_TOKEN_PICK } = env
 
 if (new Set([TOKEN0, TOKEN1, ...PREFERRED_TOKENS]).size != 2 + PREFERRED_TOKENS.length) {
   throw new Error('invaild config about tokens: no duplication is allowed')
@@ -236,7 +236,7 @@ async function main () {
   //   .connect()
   //
   gasPriceWei = await chainClient.getGasPrice()
-  const arbitrage = new SmartRouterArbitrage(chain, chainClient, account, FlashLoanSmartRouterAddress)
+  const arbitrage = new SmartRouterArbitrage(chain, chainClient, account, PancakeswapArbitrageAddress)
   // load swap pool
   const preferredTokens = PREFERRED_TOKENS.map(sym => findTokenWithSymbol(sym))
   const preferredTokenAddresses = new Set(preferredTokens.map(t => t.address))
