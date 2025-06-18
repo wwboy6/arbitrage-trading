@@ -1,8 +1,8 @@
-import { Account, Chain, createWalletClient, http, PublicClient, WalletClient } from "viem";
+import { Account, Chain, createWalletClient, Hash, http, ParseAccount, PublicClient, TransactionReceipt, Transport, WalletClient } from "viem"
 import { SmartRouter, SmartRouterTrade, SMART_ROUTER_ADDRESSES, SwapRouter, QuoteProvider, Pool, Route, RouteType } from '@pancakeswap/smart-router'
 import { ChainId, Currency, CurrencyAmount, ERC20Token, Native, Percent, TradeType } from "@pancakeswap/sdk";
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
-import FlashLoanSmartRouterInfo from '../contract/FlashLoanSmartRouter.json'
+import PancakeswapArbitrageInfo from '../contract/PancakeswapArbitrage.json'
 import { transformToCurrency, transformToCurrencyAmount, transformToSwapPool } from "../swap-pool";
 import { getBalanceOfTokenOrNative, prepareTradeForCustomContract } from "../util/bc";
 
@@ -17,20 +17,27 @@ export type AttackResult = {
   attackPlan: AttackPlan,
   tokenGain: CurrencyAmount<Currency>,
   nativeCurrencyChange: CurrencyAmount<Currency>,
-  hash: `0x${string}`,
-  // TODO: estimate profit in usd
+  hash: Hash | null,
+  receipt: TransactionReceipt | null,
+  error: Error,
+}
+
+export type AttackConfig = {
+  timeout: number,
 }
 
 export class SmartRouterArbitrage {
+  chain: Chain
   chainClient: PublicClient;
   account: Account;
   pancakeswapArbitrageAddress: `0x${string}`;
   nativeCurrency: Native;
-  walletClient: WalletClient;
+  walletClient: WalletClient<Transport, Chain, ParseAccount<Account>, undefined>;
   smartRouterAddress: string;
   quoteProvider: QuoteProvider;
 
   constructor(chain: Chain, chainClient: PublicClient, account: Account, pancakeswapArbitrageAddress: `0x${string}`) {
+    this.chain = chain
     this.chainClient = chainClient
     this.account = account
     this.pancakeswapArbitrageAddress = pancakeswapArbitrageAddress
@@ -44,6 +51,18 @@ export class SmartRouterArbitrage {
     this.quoteProvider = SmartRouter.createQuoteProvider({
       onChainProvider: () => chainClient,
     })
+  }
+
+  async approve(swapFrom: ERC20Token) {
+    const { request: req0 } = await this.chainClient.simulateContract({
+      address: swapFrom.address,
+      abi: ERC20.abi,
+      functionName: 'approve',
+      args: [this.pancakeswapArbitrageAddress, 2n**256n-1n],
+      account: this.account,
+    })
+    const hash = await this.walletClient.writeContract(req0)
+    return hash
   }
 
   async findBestAttack(swapFromAmount: CurrencyAmount<ERC20Token>, swapTo: ERC20Token, swapPools: Pool[], gasPriceWei: bigint) : Promise<AttackPlan | null> { // TODO: return type
@@ -94,8 +113,17 @@ export class SmartRouterArbitrage {
     }
   }
 
-  async performAttack(attackPlan: AttackPlan) : Promise<AttackResult> {
+  async performAttack(
+    attackPlan: AttackPlan,
+    gasPrice: bigint,
+    maxFeePerGas: bigint,
+    maxPriorityFeePerGas: bigint,
+    config: AttackConfig = {
+      timeout: 60
+    },
+  ) : Promise<AttackResult> {
     const { swapFromAmount, swapTo, trades } = attackPlan
+    const { timeout } = config;
     const swapFrom = swapFromAmount.currency
     const calldatas = trades.map(t => {
       const trade = prepareTradeForCustomContract(t)
@@ -109,25 +137,57 @@ export class SmartRouterArbitrage {
     const tokenBalance0 = await getBalanceOfTokenOrNative(this.chainClient, this.account.address, swapFrom)
     const nativeBalance0 = await getBalanceOfTokenOrNative(this.chainClient, this.account.address , this.nativeCurrency)
     const swapFromBalance = swapFromAmount.numerator / swapFromAmount.denominator
-    // approve
-    const { request: req0 } = await this.chainClient.simulateContract({
-      address: swapFrom.address,
-      abi: ERC20.abi,
-      functionName: 'approve',
-      args: [this.pancakeswapArbitrageAddress, swapFromBalance],
-      account: this.account,
-    })
-    let hash = await this.walletClient.writeContract(req0)
-    // TODO: run contract
-    const { request: req1, result: res1 } = await this.chainClient.simulateContract({
-      account: this.account,
-      address: this.pancakeswapArbitrageAddress,
-      abi: FlashLoanSmartRouterInfo.abi,
-      functionName: "attack",
-      args: [swapFrom.address, swapFromBalance, calldatas[0], swapTo.address, calldatas[1]],
-    })
-    console.log(res1)
-    hash = await this.walletClient.writeContract(req1)
+    let hash: Hash | null = null
+    // run contract
+    // TODO: create function saveWriteContract
+    let error: any = null
+    let receipt: TransactionReceipt | null = null
+    try {
+      const writeContractCall = {
+        account: this.account,
+        address: this.pancakeswapArbitrageAddress,
+        abi: PancakeswapArbitrageInfo.abi,
+        functionName: "attack",
+        args: [swapFrom.address, swapFromBalance, calldatas[0], swapTo.address, calldatas[1]],
+        // TODO: gasPrice strategy
+        maxFeePerGas,
+        maxPriorityFeePerGas: maxPriorityFeePerGas * 15n / 10n,
+        // maxPriorityFeePerGas,
+      }
+      const { request: req1 } = await this.chainClient.simulateContract(writeContractCall)
+      hash = await this.walletClient.writeContract(req1)
+      // wait for contract finish
+      receipt = await Promise.race([
+        this.chainClient.waitForTransactionReceipt({ hash }),
+        new Promise<null>((resolve, _) =>
+          setTimeout(() => resolve(null), timeout)
+        ),
+      ])
+      if (!receipt) {
+        error = new Error('time out and revert')
+        // cancel transaction
+        const originalTx = await this.chainClient.getTransaction({ hash })
+        // const walletClient = createWalletClient({
+        //   account: this.account,
+        //   chain: this.chain,
+        //   transport: http(),
+        // })
+        // const hash2 = await this.walletClient.sendTransaction({
+        //   to: this.account.address,
+        //   value: 0n,
+        // })
+        const hash2 = await this.walletClient.sendTransaction({
+          nonce: originalTx.nonce, // Use the same nonce to replace the transaction
+          to: this.account.address, // Send to self
+          value: 0n, // Zero value
+          gasPrice: gasPrice * 2n, // Double the gas price to prioritize
+        });
+        await this.chainClient.waitForTransactionReceipt({ hash: hash2 })
+        console.log('Cancellation transaction confirmed')
+      }
+    } catch (e: any) {
+      error = e
+    }
     //
     const tokenBalance1 = await getBalanceOfTokenOrNative(this.chainClient, this.account.address, swapFrom)
     const nativeBalance1 = await getBalanceOfTokenOrNative(this.chainClient, this.account.address , this.nativeCurrency)
@@ -135,7 +195,9 @@ export class SmartRouterArbitrage {
       attackPlan,
       tokenGain: CurrencyAmount.fromRawAmount(swapFrom, tokenBalance1 - tokenBalance0),
       nativeCurrencyChange: CurrencyAmount.fromRawAmount(this.nativeCurrency,nativeBalance1 - nativeBalance0),
-      hash
+      hash,
+      receipt,
+      error,
     }
   }
 }

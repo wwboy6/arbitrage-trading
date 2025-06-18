@@ -1,0 +1,2 @@
+Gas fee: 53001 gwei
+i.e. PROFIT_THRESHOLD ~ Gas fee * 2 = 100000000000000

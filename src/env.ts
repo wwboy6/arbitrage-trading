@@ -17,5 +17,6 @@ const envSchema = z.object({
   PREFERRED_TOKENS: z.string().transform(s => s.split(',')),
   V2_POOL_TOP: z.string().transform(s => Number(s)),
   LINKED_TOKEN_PICK: z.string().transform(s => Number(s)),
+  PROFIT_THRESHOLD: z.string().transform(s => Number(s)),
 });
 export default envSchema.parse(process.env);

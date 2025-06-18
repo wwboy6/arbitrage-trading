@@ -11,7 +11,7 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { bestTradeExactInput } from './swap-pool/trade'
 // import * as redis from '@redis/client'
 // import { RedisClient } from './util/redis'
-import { saveObject } from './util'
+import { saveObject, toSerializable } from './util'
 import { Transformer, V2Pool, V3Pool } from '@pancakeswap/smart-router'
 import { throttledHttp } from './util/throttled-http'
 import { setIntersection, randomSelect, arrayContains, setUnion } from './util/collection'
@@ -22,8 +22,10 @@ import { setGlobalDispatcher, ProxyAgent } from "undici"
 
 import dayjs from "dayjs"
 import fs from 'fs/promises'
+import pMemoize from 'p-memoize'
+import ExpiryMap from 'expiry-map'
 
-const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, PancakeswapArbitrageAddress, THE_GRAPH_KEY, RedisUrl, PROXY_URL, PREFERRED_TOKENS, V2_POOL_TOP, LINKED_TOKEN_PICK } = env
+const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, PancakeswapArbitrageAddress, THE_GRAPH_KEY, RedisUrl, PROXY_URL, PREFERRED_TOKENS, V2_POOL_TOP, LINKED_TOKEN_PICK, PROFIT_THRESHOLD } = env
 
 if (new Set([TOKEN0, TOKEN1, ...PREFERRED_TOKENS]).size != 2 + PREFERRED_TOKENS.length) {
   throw new Error('invaild config about tokens: no duplication is allowed')
@@ -87,7 +89,7 @@ const swapTokenAddresses = mapToAddress(swapTokens)
 
 let swapFromAmount = CurrencyAmount.fromRawAmount(swapFrom, swapFromAmountBI)
 
-const chainClient: PublicClient = createPublicClient({
+const chainClientForAttack: PublicClient = createPublicClient({
   chain: chain,
   transport: throttledHttp(
     chain.rpcUrls.default.http[0],
@@ -107,9 +109,30 @@ const chainClient: PublicClient = createPublicClient({
   },
 })
 
+// TODO:
+const mainnetChainClient: PublicClient = createPublicClient({
+  chain: bsc,
+  transport: throttledHttp(
+    bsc.rpcUrls.default.http[0],
+    {
+      retryCount: Infinity, // FIXME:
+      retryDelay: 1 * 1000,
+    } as any, // TODO:
+    {
+      limit: 3, // TODO: this depends on rpc server
+      interval: 1000
+    }
+  ),
+  batch: {
+    multicall: {
+      batchSize: 2**10, // TODO: determine optimal batch size
+    }
+  },
+})
+
 const account = privateKeyToAccount(PRIVATE_KEY)
 
-const onChainSwapPoolProvider = new OnChainSwapPoolProvider(chain, chainClient, THE_GRAPH_KEY)
+const onChainSwapPoolProvider = new OnChainSwapPoolProvider(chain, mainnetChainClient, THE_GRAPH_KEY)
 
 async function fundToken() {
   const testAccountPrivateKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
@@ -124,11 +147,8 @@ async function fundToken() {
     value: fromAmount,
   })
   const nativeCurrency = Native.onChain(chain.id)
-  await bestTradeExactInput(chain, chainClient, onChainSwapPoolProvider, account, nativeCurrency, fromAmount / 2n, swapFrom)
+  await bestTradeExactInput(chain, mainnetChainClient, onChainSwapPoolProvider, account, nativeCurrency, fromAmount / 2n, swapFrom)
 }
-
-// TODO: update gasPriceWei periodically
-let gasPriceWei: bigint
 
 function logAttackPlan(attackPlan: AttackPlan) {
   // log pools
@@ -209,7 +229,7 @@ async function main () {
   if (NODE_ENV == 'development') {
     // fund token for development
     // FIXME: check token balance instead
-    const balance = await chainClient.getBalance({
+    const balance = await chainClientForAttack.getBalance({
       address: account.address
     })
     logger.info(`balance: ${balance}`)
@@ -235,8 +255,8 @@ async function main () {
   //   .on('connect', () => console.log('Connected to Redis'))
   //   .connect()
   //
-  gasPriceWei = await chainClient.getGasPrice()
-  const arbitrage = new SmartRouterArbitrage(chain, chainClient, account, PancakeswapArbitrageAddress)
+  const arbitrage = new SmartRouterArbitrage(bsc, mainnetChainClient, account, PancakeswapArbitrageAddress)
+  const arbitrageForAttack = new SmartRouterArbitrage(chain, chainClientForAttack, account, PancakeswapArbitrageAddress)
   // load swap pool
   const preferredTokens = PREFERRED_TOKENS.map(sym => findTokenWithSymbol(sym))
   const preferredTokenAddresses = new Set(preferredTokens.map(t => t.address))
@@ -245,7 +265,7 @@ async function main () {
   // const swapPools = await swapPoolProvider.getPoolForTokens(swapFrom, swapTo)
   // console.timeEnd('find swap pool')
   // TODO:
-  let v2Pools = await fetchV2Pool(chainClient, swapFrom, swapTo)
+  let v2Pools = await fetchV2Pool(mainnetChainClient, swapFrom, swapTo)
   logger.info(`v2Pools ${v2Pools.length}`)
   let v2SelectedTokens = [
     ...v2Pools.map(p => getTokenFromPool(p, 0)),
@@ -289,9 +309,21 @@ async function main () {
   logger.info(`directPools ${directPools.length}`)
   logger.info(`indirectPools ${indirectPools.length}`)
   const indirectPooltokenMap = getTokenMapFromPools(indirectPools)
+  const estimateFeesPerGas = pMemoize(async () => ({
+    gasPriceWei: await chainClientForAttack.getGasPrice(),
+    ...await chainClientForAttack.estimateFeesPerGas(),
+  }), {cache: new ExpiryMap(10000)})
+  // approve contract
+  if (NODE_ENV == 'development') {
+    arbitrageForAttack.approve(swapFrom)
+  }
   // start searching loop
   while (true) { // TODO: stop condition for refreshing pool
     logger.info(`--------------------------------`)
+    // regularly fetch gas fee
+    const { gasPriceWei, maxFeePerGas, maxPriorityFeePerGas } = await estimateFeesPerGas()
+    logger.info({ gasPriceWei, maxFeePerGas, maxPriorityFeePerGas })
+    //
     logger.info(`v2 Filterred ${v2FilterredTokenSymbols}`)
     // random select limited linked tokens
     const selectedTokens = new Set(randomSelect([...linkedTokensForRoute], LINKED_TOKEN_PICK - v2FilterredTokenAddresses.size))
@@ -320,13 +352,27 @@ async function main () {
       // save current attack plan
       const dateStr = dayjs().format("YYYY-MM-DD_HH-mm-ss")
       saveObject(attackPlan, `./data/${tokenPairKey}/attackPlan-${dateStr}.json`)
+      if (
+        NODE_ENV === 'development' ||
+        attackPlan.tokenGain.numerator < PROFIT_THRESHOLD
+      ) continue
       // perform attack
-      // TODO: check attack plan profit
-      // console.time('perform attack')
-      // const result = await arbitrage.performAttack(attackPlan)
-      // console.timeEnd('perform attack')
-      // logger.info(`result ${result.hash}`)
-      // logger.info(`${result.nativeCurrencyChange.toFixed(5)} ${result.tokenGain.toFixed(5)}`)
+      // TODO: not to wait for transaction
+      console.time('perform attack')
+      const result = await arbitrageForAttack.performAttack(attackPlan, gasPriceWei, maxFeePerGas, maxPriorityFeePerGas)
+      console.timeEnd('perform attack')
+      logger.info(`result ${result.hash}`)
+      const bscPriceHkd = 5062
+      const currencyChange = Number(result.nativeCurrencyChange.toFixed(5))
+      logger.info(`currency change ${currencyChange} ${currencyChange * bscPriceHkd}`)
+      const swapInPriceHkd = 5062
+      const swapInChange = Number(result.tokenGain.toFixed(5))
+      logger.info(`swapIn change ${swapInChange} ${swapInChange * swapInPriceHkd}`)
+      const attackResultStr = JSON.stringify(toSerializable({
+        ...result,
+        attackPlan: dateStr,
+      }), null , 2)
+      await fs.writeFile(`./data/${tokenPairKey}/attackResult-${dateStr}.json`, attackResultStr, { encoding: 'utf8' })
     }
     // TODO: delay for scanning interval
   }
