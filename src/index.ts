@@ -80,8 +80,6 @@ const swapTokenAddresses = mapToAddress(swapTokens)
 
 let swapFromAmount = CurrencyAmount.fromRawAmount(swapFrom, swapFromAmountBI)
 
-// const proxyAgent = new HttpsProxyAgent(PROXY_URL)
-
 const chainClient: PublicClient = createPublicClient({
   chain: chain,
   transport: throttledHttp(
