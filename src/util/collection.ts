@@ -26,3 +26,8 @@ export function randomSelect<T>(items: T[], count: number): T[] {
 
   return items.slice(0, count);
 }
+
+export function arrayUnique<T>(arr: T[], identifier: (ele: T)=>(string|Number)): T[] {
+  const ids = new Set(arr.map(identifier))
+  return [...ids].map(id => arr.find(ele => identifier(ele) === id)) as any
+}
