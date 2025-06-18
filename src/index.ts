@@ -5,7 +5,7 @@ import { bsc, Chain } from 'viem/chains'
 import { findTokenWithSymbol } from './util/token'
 import { AttackPlan, SmartRouterArbitrage } from './arbitrage'
 import { z } from 'zod';
-import { Currency, CurrencyAmount, ERC20Token, Native } from '@pancakeswap/sdk'
+import { Currency, CurrencyAmount, ERC20Token, Native, Token } from '@pancakeswap/sdk'
 import { fetchV2Pool, OnChainSwapPoolProvider } from './swap-pool'
 import { privateKeyToAccount } from 'viem/accounts'
 import { bestTradeExactInput } from './swap-pool/trade'
@@ -132,16 +132,17 @@ function logAttackPlan(attackPlan: AttackPlan) {
   logger.info(`[plan] gain:${attackPlan.tokenGain.toFixed(5)} tokens:${tokenSymbols}`)
 }
 
-async function fetchAndFilterV3Pool(preferredTokens: Set<Hash>) {
+async function fetchAndFilterV3Pool(preferredTokens: Set<Token>) {
   // TODO: load pool cache from redis
   let swapPools: (V2Pool | V3Pool)[] = swapPoolDataRaw.map((d: any) => Transformer.parsePool(chain.id, d)) as any[]
   if (!swapPools || !swapPools.length) throw new Error('No pool is found')
   logger.info(`swap pool count ${swapPools.length}`)
   // filter pool and token that can form route (consider route of 1 / 2 pool only)
   // seperate direct pool and indirect pool
+  const preferredTokenAddresses = new Set([...preferredTokens].map(t => t.address))
   const poolGroups = Object.groupBy(swapPools, p =>
     arrayContains(swapTokenAddresses, getTokenFromPool(p, 0).address) && arrayContains(swapTokenAddresses, getTokenFromPool(p, 1).address) ? 'directPoolsAll' :
-    preferredTokens.has(getTokenFromPool(p, 0).address) || preferredTokens.has(getTokenFromPool(p, 1).address) ? 'preferredPools' :
+    preferredTokenAddresses.has(getTokenFromPool(p, 0).address) || preferredTokenAddresses.has(getTokenFromPool(p, 1).address) ? 'preferredPools' :
         'indirectPoolsAll'
   )
   const { directPoolsAll = [], preferredPools = [], indirectPoolsAll = [] } = poolGroups
@@ -211,10 +212,11 @@ async function main () {
   const v2Pools = await fetchV2Pool(chainClient, swapFrom, swapTo)
   logger.info(`v2Pools ${v2Pools.length}`)
   const v2SelectedTokens = new Set([
-    ...v2Pools.map(p => getTokenFromPool(p, 0).address),
-    ...v2Pools.map(p => getTokenFromPool(p, 1).address)
-  ].filter(addr => !arrayContains(swapTokenAddresses, addr)))
+    ...v2Pools.map(p => getTokenFromPool(p, 0)),
+    ...v2Pools.map(p => getTokenFromPool(p, 1))
+  ].filter(token => !arrayContains(swapTokenAddresses, token.address)))
   logger.info(`v2 tokens: ${v2SelectedTokens.size}`)
+  logger.info(`${[...v2SelectedTokens].map(t => t.symbol)}`)
   //
   const { preferredPools, directPools, indirectPools, linkedTokensForRoute } = await fetchAndFilterV3Pool(v2SelectedTokens)
   logger.info(`preferredPools ${preferredPools.length}`)
