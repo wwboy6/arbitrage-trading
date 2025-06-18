@@ -14,6 +14,8 @@ const envSchema = z.object({
   THE_GRAPH_KEY: z.string(),
   RedisUrl: z.string(),
   PROXY_URL: z.string(),
+  PREFERRED_TOKENS: z.string().transform(s => s.split(',')),
+  V2_POOL_TOP: z.string().transform(s => Number(s)),
   LINKED_TOKEN_PICK: z.string().transform(s => Number(s)),
 });
 export default envSchema.parse(process.env);

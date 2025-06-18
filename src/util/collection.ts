@@ -3,6 +3,11 @@ export function setIntersection<T>(set0: Set<T>, set1: Set<T>): Set<T> {
   return (set0 as any).intersection(set1)
 }
 
+// just to fix typing of vscode
+export function setUnion<T>(set0: Set<T>, set1: Set<T>): Set<T> {
+  return (set0 as any).union(set1)
+}
+
 export function arrayContains<T>(array: T[], value: T): boolean {
   return array.indexOf(value) >= 0
 }

@@ -1,5 +1,6 @@
-import { Currency, Token } from "@pancakeswap/sdk";
-import { Pool, PoolType } from "@pancakeswap/smart-router";
+import { Currency, Token } from "@pancakeswap/sdk"
+import { Pool, PoolType } from "@pancakeswap/smart-router"
+import { Hex } from 'viem'
 
 export type PoolTokenIndex = 0 | 1
 export const poolTokenIndexes: PoolTokenIndex[] = [0,1]
@@ -20,4 +21,15 @@ export function getCurrencyFromPool(pool: Pool, tokenIndex: PoolTokenIndex): Cur
 
 export function getTokenFromPool(pool: Pool, tokenIndex: PoolTokenIndex): Token {
   return getCurrencyFromPool(pool, tokenIndex).wrapped
+}
+
+export function getTokenMapFromPools(pools: Pool[]) {
+  const map: any = {}
+  for (const pool of pools) {
+    for (const index of poolTokenIndexes) {
+      const token = getTokenFromPool(pool, index)
+      map[token.address] = token
+    }
+  }
+  return map
 }
