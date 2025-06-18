@@ -6,7 +6,6 @@ import { Tick } from '@pancakeswap/v3-sdk'
 import { toSerializable, parseSerializable } from '../util'
 import pino from 'pino'
 import { RedisClient } from '../util/redis'
-import { HttpsProxyAgent } from 'https-proxy-agent'
 import { PatchedRequestInit } from 'graphql-request/dist/types';
 // import crossFetch from 'cross-fetch'
 import fetch from 'node-fetch'
@@ -15,11 +14,6 @@ import { RequestInfo, RequestInit } from 'node-fetch'
 import env from '../env'
 import { UniswapV2_8EjC_query, UniswapV2_8EjC_Type, UniswapV2_8EjC_Url } from './graphql-info';
 import Big from 'big.js'
-
-const { PROXY_URL } = env
-
-// FIXME:
-// import { getPools as getPools_busd_usdt } from './pools-busd-usdt's
 
 const logger = pino({ level: 'info' })
 
@@ -43,13 +37,7 @@ export class OnChainSwapPoolProvider implements SwapPoolProvider {
     this.chainClient = chainClient
 
     const graphQLClientConfig : PatchedRequestInit = {}
-    if (PROXY_URL) {
-      const agent = new HttpsProxyAgent(PROXY_URL)
-      graphQLClientConfig.fetch = (url: URL | RequestInfo, init: RequestInit) => {
-        return fetch(url, {...init, agent})
-      }
-    }
-    
+  
     // this.v2SubgraphClient = new GraphQLClient('https://proxy-worker-api.pancakeswap.com/bsc-exchange', {})
     // this.v2SubgraphClient = new GraphQLClient(`https://gateway.thegraph.com/api/${apiKey}/subgraphs/id/Hv1GncLY5docZoGtXjo4kwbTvxm3MAhVZqBZE4sUT9eZ`)
     // Uniswap V2

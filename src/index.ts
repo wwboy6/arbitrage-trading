@@ -19,9 +19,18 @@ import { setIntersection, randomSelect, arrayContains } from './util/collection'
 import swapPoolDataRaw from './swap-pool/pools-wbnb-busd.json'
 import { getTokenFromPool, poolTokenIndexes } from './util/pool'
 
-const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, FlashLoanSmartRouterAddress, THE_GRAPH_KEY, RedisUrl, LINKED_TOKEN_PICK } = env
+import { setGlobalDispatcher, ProxyAgent } from "undici";
+
+const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, FlashLoanSmartRouterAddress, THE_GRAPH_KEY, RedisUrl, LINKED_TOKEN_PICK, PROXY_URL } = env
 
 const logger = pino({ level: PINO_LEVEL })
+
+if (PROXY_URL) {
+  // Corporate proxy uses CA not in undici's certificate store
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+  const dispatcher = new ProxyAgent({uri: new URL(PROXY_URL).toString() });
+  setGlobalDispatcher(dispatcher);
+}
 
 logger.info('==== Blockchain Arbitrage Trading Bot ====')
 logger.info(`NODE_ENV: ${NODE_ENV}`)
@@ -71,6 +80,8 @@ const swapTokenAddresses = mapToAddress(swapTokens)
 
 let swapFromAmount = CurrencyAmount.fromRawAmount(swapFrom, swapFromAmountBI)
 
+// const proxyAgent = new HttpsProxyAgent(PROXY_URL)
+
 const chainClient: PublicClient = createPublicClient({
   chain: chain,
   transport: throttledHttp(
@@ -78,7 +89,7 @@ const chainClient: PublicClient = createPublicClient({
     {
       retryCount: Infinity, // FIXME:
       retryDelay: 1 * 1000,
-    },
+    } as any, // TODO:
     {
       limit: 3, // TODO: this depends on rpc server
       interval: 1000
