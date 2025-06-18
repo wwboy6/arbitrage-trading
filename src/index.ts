@@ -4,7 +4,7 @@ import { createPublicClient, createWalletClient, defineChain, Hash, http, Public
 import { bsc, Chain } from 'viem/chains'
 import { findTokenWithSymbol } from './util/token'
 import { AttackPlan, SmartRouterArbitrage } from './arbitrage'
-import { z } from 'zod';
+import { z } from 'zod'
 import { Currency, CurrencyAmount, ERC20Token, Native, Token } from '@pancakeswap/sdk'
 import { fetchV2Pool, OnChainSwapPoolProvider } from './swap-pool'
 import { privateKeyToAccount } from 'viem/accounts'
@@ -16,23 +16,27 @@ import { Transformer, V2Pool, V3Pool } from '@pancakeswap/smart-router'
 import { throttledHttp } from './util/throttled-http'
 import { setIntersection, randomSelect, arrayContains, setUnion } from './util/collection'
 
-import swapPoolDataRaw from './swap-pool/pools-wbnb-busd.json'
-
 import { getTokenFromPool, getTokenMapFromPools, poolTokenIndexes } from './util/pool'
 
-import { setGlobalDispatcher, ProxyAgent } from "undici";
+import { setGlobalDispatcher, ProxyAgent } from "undici"
 
-import dayjs from "dayjs";
+import dayjs from "dayjs"
+import fs from 'fs/promises'
 
 const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, FlashLoanSmartRouterAddress, THE_GRAPH_KEY, RedisUrl, PROXY_URL, PREFERRED_TOKENS, V2_POOL_TOP, LINKED_TOKEN_PICK } = env
+
+if (new Set([TOKEN0, TOKEN1, ...PREFERRED_TOKENS]).size != 2 + PREFERRED_TOKENS.length) {
+  throw new Error('invaild config about tokens: no duplication is allowed')
+}
+const tokenPairKey = `${TOKEN0.toLowerCase()}-${TOKEN1.toLowerCase()}`
 
 const logger = pino({ level: PINO_LEVEL })
 
 if (PROXY_URL) {
   // Corporate proxy uses CA not in undici's certificate store
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  const dispatcher = new ProxyAgent({uri: new URL(PROXY_URL).toString() });
-  setGlobalDispatcher(dispatcher);
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+  const dispatcher = new ProxyAgent({uri: new URL(PROXY_URL).toString() })
+  setGlobalDispatcher(dispatcher)
 }
 
 logger.info('==== Blockchain Arbitrage Trading Bot ====')
@@ -103,7 +107,7 @@ const chainClient: PublicClient = createPublicClient({
   },
 })
 
-const account = privateKeyToAccount(PRIVATE_KEY);
+const account = privateKeyToAccount(PRIVATE_KEY)
 
 const onChainSwapPoolProvider = new OnChainSwapPoolProvider(chain, chainClient, THE_GRAPH_KEY)
 
@@ -142,9 +146,14 @@ function logAttackPlan(attackPlan: AttackPlan) {
   logger.info(`[plan] gain:${attackPlan.tokenGain.toFixed(5)} tokens:${poolDes}`)
 }
 
+type WithTxCount = {
+  txCount: Number
+}
+
 async function fetchAndFilterV3Pool(preferredTokenAddresses: Set<String>) {
   // TODO: load pool cache from redis
-  let swapPools: V3Pool[] = swapPoolDataRaw.map((d: any) => Transformer.parsePool(chain.id, d)) as any[]
+  const swapPoolDataRaw = JSON.parse(await fs.readFile(`./data/${tokenPairKey}/pools-${tokenPairKey}.json`, 'utf8'))
+  let swapPools: (V3Pool & WithTxCount)[] = swapPoolDataRaw.map((d: any) => Transformer.parsePool(chain.id, d)) as any[]
   if (!swapPools || !swapPools.length) throw new Error('No pool is found')
   logger.info(`swap pool count ${swapPools.length}`)
   // TODO: better fee selection
@@ -155,7 +164,7 @@ async function fetchAndFilterV3Pool(preferredTokenAddresses: Set<String>) {
     const pool1 = map[tokenPairKey]
     if (
       !pool1 ||
-      pool.fee < pool1.fee
+      pool.txCount > pool1.txCount
     ) {
       map[tokenPairKey] = pool
     }
@@ -259,7 +268,7 @@ async function main () {
   const preferredV2TokenAddresses = setIntersection(preferredTokenAddresses, v2SelectedTokenAddresses)
   let v2FilterredTokenAddresses = new Set([...v2FilterredTokens.map(t => t.address), ...preferredV2TokenAddresses])
   v2FilterredTokens = [...v2FilterredTokenAddresses].map(addr => {
-    const t = v2FilterredTokens.find(t => t.address === addr)
+    const t = v2SelectedTokens.find(t => t.address === addr)
     if (t === undefined) throw new Error('WTF')
     return t
   })
@@ -310,13 +319,13 @@ async function main () {
       logger.info(`can perform attack`)
       // save current attack plan
       const dateStr = dayjs().format("YYYY-MM-DD_HH-mm-ss")
-      saveObject(attackPlan, `./data/attackPlan-${dateStr}.json`)
+      saveObject(attackPlan, `./data/${tokenPairKey}/attackPlan-${dateStr}.json`)
       // perform attack
       // TODO: check attack plan profit
       // console.time('perform attack')
       // const result = await arbitrage.performAttack(attackPlan)
       // console.timeEnd('perform attack')
-      // logger.info(`result ${result.hash}`);
+      // logger.info(`result ${result.hash}`)
       // logger.info(`${result.nativeCurrencyChange.toFixed(5)} ${result.tokenGain.toFixed(5)}`)
     }
     // TODO: delay for scanning interval
