@@ -163,7 +163,16 @@ function logAttackPlan(attackPlan: AttackPlan) {
     // prepare for next one
     inputTokenAddress = outputToken.address
   }
-  logger.info(`[plan] gain:${attackPlan.tokenGain.toFixed(5)} tokens:${poolDes}`)
+  const desc = `gain:${attackPlan.tokenGain.toFixed(5)} tokens:${poolDes}`
+  logger.info(`[plan] ${desc}`)
+  return desc
+}
+
+async function writeLog(str: string) {
+  logger.info(str)
+  const dateStr = dayjs().format("YYYY-MM-DD_HH-mm-ss")
+  const result = await fs.appendFile(`./data/${tokenPairKey}/log.txt`, `${dateStr} ${str}\n`, { encoding: 'utf8' })
+  return result
 }
 
 type WithTxCount = {
@@ -344,18 +353,18 @@ async function main () {
     console.timeEnd('find attack')
     if (!attackPlan) continue
     // logger.info(attackPlan, 'attackPlan')
-    logAttackPlan(attackPlan)
+    const attackPlanDesc = logAttackPlan(attackPlan)
     logger.info(`currency amount ${swapFromAmount.toFixed(5)} ${attackPlan.trades[0].outputAmount.toFixed(5)} ${attackPlan.trades[1].outputAmount.toFixed(5)}`)
     // TODO: perform attack on another async op / thread
     if (attackPlan.tokenGain.numerator > 0) {
-      logger.info(`can perform attack`)
+      if (attackPlan.tokenGain.numerator < PROFIT_THRESHOLD) {
+        writeLog(`too less profit ${attackPlan.tokenGain.numerator}`)
+      }
+      if (NODE_ENV === 'development') continue
+      writeLog(`perform attack ${attackPlanDesc}`)
       // save current attack plan
       const dateStr = dayjs().format("YYYY-MM-DD_HH-mm-ss")
       saveObject(attackPlan, `./data/${tokenPairKey}/attackPlan-${dateStr}.json`)
-      if (
-        NODE_ENV === 'development' ||
-        attackPlan.tokenGain.numerator < PROFIT_THRESHOLD
-      ) continue
       // perform attack
       // TODO: not to wait for transaction
       console.time('perform attack')
