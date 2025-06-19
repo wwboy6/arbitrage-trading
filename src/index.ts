@@ -35,6 +35,7 @@ const tokenPairKey = `${TOKEN0.toLowerCase()}-${TOKEN1.toLowerCase()}`
 const logger = pino({ level: PINO_LEVEL })
 
 if (PROXY_URL) {
+  // FIXME: NO_PROXY
   // Corporate proxy uses CA not in undici's certificate store
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
   const dispatcher = new ProxyAgent({uri: new URL(PROXY_URL).toString() })
@@ -144,7 +145,7 @@ const mainnetChainClient: PublicClient = createPublicClient({
 
 const account = privateKeyToAccount(PRIVATE_KEY)
 
-const onChainSwapPoolProvider = new OnChainSwapPoolProvider(chain, mainnetChainClient, THE_GRAPH_KEY)
+const onChainSwapPoolProvider = new OnChainSwapPoolProvider(publicChain, mainnetChainClient, THE_GRAPH_KEY)
 
 async function fundToken() {
   const testAccountPrivateKey = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
@@ -159,7 +160,7 @@ async function fundToken() {
     value: fromAmount,
   })
   const nativeCurrency = Native.onChain(chain.id)
-  await bestTradeExactInput(chain, mainnetChainClient, onChainSwapPoolProvider, account, nativeCurrency, fromAmount / 2n, swapFrom)
+  await bestTradeExactInput(chain, chainClientForAttack, onChainSwapPoolProvider, account, nativeCurrency, fromAmount / 2n, swapFrom)
 }
 
 function logAttackPlan(attackPlan: AttackPlan) {
@@ -371,6 +372,7 @@ async function main () {
     if (attackPlan.tokenGain.numerator > 0) {
       if (attackPlan.tokenGain.numerator < PROFIT_THRESHOLD) {
         writeLog(`too less profit ${attackPlan.tokenGain.numerator}`)
+        continue
       }
       if (NODE_ENV === 'development') continue
       writeLog(`perform attack ${attackPlanDesc}`)
