@@ -18,5 +18,6 @@ const envSchema = z.object({
   V2_POOL_TOP: z.string().transform(s => Number(s)),
   LINKED_TOKEN_PICK: z.string().transform(s => Number(s)),
   PROFIT_THRESHOLD: z.string().transform(s => Number(s)),
+  ZAN_API_KEY: z.string(),
 });
 export default envSchema.parse(process.env);

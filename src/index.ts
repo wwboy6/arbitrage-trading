@@ -25,7 +25,7 @@ import fs from 'fs/promises'
 import pMemoize from 'p-memoize'
 import ExpiryMap from 'expiry-map'
 
-const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, PancakeswapArbitrageAddress, THE_GRAPH_KEY, RedisUrl, PROXY_URL, PREFERRED_TOKENS, V2_POOL_TOP, LINKED_TOKEN_PICK, PROFIT_THRESHOLD } = env
+const { PINO_LEVEL, NODE_ENV, PRIVATE_KEY, TOKEN0, TOKEN1, SwapFromAmount, PancakeswapArbitrageAddress, THE_GRAPH_KEY, RedisUrl, PROXY_URL, PREFERRED_TOKENS, V2_POOL_TOP, LINKED_TOKEN_PICK, PROFIT_THRESHOLD, ZAN_API_KEY } = env
 
 if (new Set([TOKEN0, TOKEN1, ...PREFERRED_TOKENS]).size != 2 + PREFERRED_TOKENS.length) {
   throw new Error('invaild config about tokens: no duplication is allowed')
@@ -44,10 +44,22 @@ if (PROXY_URL) {
 logger.info('==== Blockchain Arbitrage Trading Bot ====')
 logger.info(`NODE_ENV: ${NODE_ENV}`)
 
+const publicChain = defineChain({
+  ...bsc,
+  rpcUrls: {
+    default: {
+      http: [`https://api.zan.top/node/v1/bsc/mainnet/${ZAN_API_KEY}`],
+    },
+    public: {
+      http: [`https://api.zan.top/node/v1/bsc/mainnet/${ZAN_API_KEY}`],
+    },
+  }
+})
+
 let chain : Chain
 
 if (NODE_ENV == 'production') {
-  chain = bsc
+  chain = publicChain
 } else {
   chain = defineChain({
     ...bsc,
@@ -111,15 +123,15 @@ const chainClientForAttack: PublicClient = createPublicClient({
 
 // TODO:
 const mainnetChainClient: PublicClient = createPublicClient({
-  chain: bsc,
+  chain: publicChain,
   transport: throttledHttp(
-    bsc.rpcUrls.default.http[0],
+    publicChain.rpcUrls.default.http[0],
     {
       retryCount: Infinity, // FIXME:
       retryDelay: 1 * 1000,
     } as any, // TODO:
     {
-      limit: 3, // TODO: this depends on rpc server
+      limit: 19, // TODO: this depends on rpc server
       interval: 1000
     }
   ),
