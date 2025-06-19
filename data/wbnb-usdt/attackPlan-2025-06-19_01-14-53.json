@@ -1,0 +1,543 @@
+{
+  "swapFromAmount": {
+    "numerator": {
+      "_type": "bigint",
+      "_value": "1000000000000000000"
+    },
+    "denominator": {
+      "_type": "bigint",
+      "_value": "1"
+    },
+    "currency": {
+      "chainId": 56,
+      "decimals": 18,
+      "symbol": "WBNB",
+      "name": "Wrapped BNB",
+      "isNative": false,
+      "isToken": true,
+      "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+      "projectLink": "https://www.binance.org"
+    },
+    "decimalScale": {
+      "_type": "bigint",
+      "_value": "1000000000000000000"
+    }
+  },
+  "swapTo": {
+    "chainId": 56,
+    "decimals": 18,
+    "symbol": "USDT",
+    "name": "Tether USD",
+    "isNative": false,
+    "isToken": true,
+    "address": "0x55d398326f99059fF775485246999027B3197955",
+    "projectLink": "https://tether.to/"
+  },
+  "trades": [
+    {
+      "tradeType": 0,
+      "routes": [
+        {
+          "percent": 100,
+          "type": 1,
+          "pools": [
+            {
+              "type": 1,
+              "address": "0x4a3218606AF9B4728a9F187E1c1a8c07fBC172a9",
+              "token0": {
+                "chainId": 56,
+                "decimals": 18,
+                "symbol": "USD1",
+                "isNative": false,
+                "isToken": true,
+                "address": "0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d"
+              },
+              "token1": {
+                "chainId": 56,
+                "decimals": 18,
+                "symbol": "WBNB",
+                "isNative": false,
+                "isToken": true,
+                "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
+              },
+              "fee": 500,
+              "liquidity": {
+                "_type": "bigint",
+                "_value": "0"
+              },
+              "sqrtRatioX96": {
+                "_type": "bigint",
+                "_value": "0"
+              },
+              "token0ProtocolFee": {
+                "numerator": {
+                  "_type": "bigint",
+                  "_value": "0"
+                },
+                "denominator": {
+                  "_type": "bigint",
+                  "_value": "100"
+                },
+                "isPercent": true
+              },
+              "token1ProtocolFee": {
+                "numerator": {
+                  "_type": "bigint",
+                  "_value": "0"
+                },
+                "denominator": {
+                  "_type": "bigint",
+                  "_value": "100"
+                },
+                "isPercent": true
+              },
+              "tvlUSD": 12239559.610577777,
+              "txCount": 831492
+            },
+            {
+              "type": 1,
+              "address": "0x9c4Ee895e4f6Ce07Ada631C508D1306Db7502cCE",
+              "token0": {
+                "chainId": 56,
+                "decimals": 18,
+                "symbol": "USDT",
+                "isNative": false,
+                "isToken": true,
+                "address": "0x55d398326f99059fF775485246999027B3197955"
+              },
+              "token1": {
+                "chainId": 56,
+                "decimals": 18,
+                "symbol": "USD1",
+                "isNative": false,
+                "isToken": true,
+                "address": "0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d"
+              },
+              "fee": 100,
+              "liquidity": {
+                "_type": "bigint",
+                "_value": "0"
+              },
+              "sqrtRatioX96": {
+                "_type": "bigint",
+                "_value": "0"
+              },
+              "token0ProtocolFee": {
+                "numerator": {
+                  "_type": "bigint",
+                  "_value": "0"
+                },
+                "denominator": {
+                  "_type": "bigint",
+                  "_value": "100"
+                },
+                "isPercent": true
+              },
+              "token1ProtocolFee": {
+                "numerator": {
+                  "_type": "bigint",
+                  "_value": "0"
+                },
+                "denominator": {
+                  "_type": "bigint",
+                  "_value": "100"
+                },
+                "isPercent": true
+              },
+              "tvlUSD": 16708836.307920722,
+              "txCount": 530172
+            }
+          ],
+          "path": [
+            {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "WBNB",
+              "name": "Wrapped BNB",
+              "isNative": false,
+              "isToken": true,
+              "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+              "projectLink": "https://www.binance.org"
+            },
+            {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "USD1",
+              "isNative": false,
+              "isToken": true,
+              "address": "0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d"
+            },
+            {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "USDT",
+              "name": "Tether USD",
+              "isNative": false,
+              "isToken": true,
+              "address": "0x55d398326f99059fF775485246999027B3197955",
+              "projectLink": "https://tether.to/"
+            }
+          ],
+          "inputAmount": {
+            "numerator": {
+              "_type": "bigint",
+              "_value": "100000000000000000000"
+            },
+            "denominator": {
+              "_type": "bigint",
+              "_value": "100"
+            },
+            "currency": {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "WBNB",
+              "name": "Wrapped BNB",
+              "isNative": false,
+              "isToken": true,
+              "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+              "projectLink": "https://www.binance.org"
+            },
+            "decimalScale": {
+              "_type": "bigint",
+              "_value": "1000000000000000000"
+            }
+          },
+          "outputAmount": {
+            "numerator": {
+              "_type": "bigint",
+              "_value": "640293386894695380545"
+            },
+            "denominator": {
+              "_type": "bigint",
+              "_value": "1"
+            },
+            "currency": {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "USDT",
+              "name": "Tether USD",
+              "isNative": false,
+              "isToken": true,
+              "address": "0x55d398326f99059fF775485246999027B3197955",
+              "projectLink": "https://tether.to/"
+            },
+            "decimalScale": {
+              "_type": "bigint",
+              "_value": "1000000000000000000"
+            }
+          }
+        }
+      ],
+      "gasEstimate": {
+        "_type": "bigint",
+        "_value": "193000"
+      },
+      "gasEstimateInUSD": {
+        "numerator": {
+          "_type": "bigint",
+          "_value": "123603432764067496"
+        },
+        "denominator": {
+          "_type": "bigint",
+          "_value": "1"
+        },
+        "currency": {
+          "chainId": 56,
+          "decimals": 18,
+          "symbol": "USDT",
+          "name": "Tether USD",
+          "isNative": false,
+          "isToken": true,
+          "address": "0x55d398326f99059fF775485246999027B3197955",
+          "projectLink": "https://tether.to/"
+        },
+        "decimalScale": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        }
+      },
+      "inputAmount": {
+        "numerator": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        },
+        "denominator": {
+          "_type": "bigint",
+          "_value": "1"
+        },
+        "currency": {
+          "chainId": 56,
+          "decimals": 18,
+          "symbol": "WBNB",
+          "name": "Wrapped BNB",
+          "isNative": false,
+          "isToken": true,
+          "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+          "projectLink": "https://www.binance.org"
+        },
+        "decimalScale": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        }
+      },
+      "outputAmount": {
+        "numerator": {
+          "_type": "bigint",
+          "_value": "640293386894695380545"
+        },
+        "denominator": {
+          "_type": "bigint",
+          "_value": "1"
+        },
+        "currency": {
+          "chainId": 56,
+          "decimals": 18,
+          "symbol": "USDT",
+          "name": "Tether USD",
+          "isNative": false,
+          "isToken": true,
+          "address": "0x55d398326f99059fF775485246999027B3197955",
+          "projectLink": "https://tether.to/"
+        },
+        "decimalScale": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        }
+      }
+    },
+    {
+      "tradeType": 0,
+      "routes": [
+        {
+          "percent": 100,
+          "type": 1,
+          "pools": [
+            {
+              "type": 1,
+              "address": "0x172fcD41E0913e95784454622d1c3724f546f849",
+              "token0": {
+                "chainId": 56,
+                "decimals": 18,
+                "symbol": "USDT",
+                "isNative": false,
+                "isToken": true,
+                "address": "0x55d398326f99059fF775485246999027B3197955"
+              },
+              "token1": {
+                "chainId": 56,
+                "decimals": 18,
+                "symbol": "WBNB",
+                "isNative": false,
+                "isToken": true,
+                "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
+              },
+              "fee": 100,
+              "liquidity": {
+                "_type": "bigint",
+                "_value": "0"
+              },
+              "sqrtRatioX96": {
+                "_type": "bigint",
+                "_value": "0"
+              },
+              "token0ProtocolFee": {
+                "numerator": {
+                  "_type": "bigint",
+                  "_value": "0"
+                },
+                "denominator": {
+                  "_type": "bigint",
+                  "_value": "100"
+                },
+                "isPercent": true
+              },
+              "token1ProtocolFee": {
+                "numerator": {
+                  "_type": "bigint",
+                  "_value": "0"
+                },
+                "denominator": {
+                  "_type": "bigint",
+                  "_value": "100"
+                },
+                "isPercent": true
+              },
+              "tvlUSD": 26121675.115433346,
+              "txCount": 37863743
+            }
+          ],
+          "path": [
+            {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "USDT",
+              "name": "Tether USD",
+              "isNative": false,
+              "isToken": true,
+              "address": "0x55d398326f99059fF775485246999027B3197955",
+              "projectLink": "https://tether.to/"
+            },
+            {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "WBNB",
+              "name": "Wrapped BNB",
+              "isNative": false,
+              "isToken": true,
+              "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+              "projectLink": "https://www.binance.org"
+            }
+          ],
+          "inputAmount": {
+            "numerator": {
+              "_type": "bigint",
+              "_value": "64029338689469538054500"
+            },
+            "denominator": {
+              "_type": "bigint",
+              "_value": "100"
+            },
+            "currency": {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "USDT",
+              "name": "Tether USD",
+              "isNative": false,
+              "isToken": true,
+              "address": "0x55d398326f99059fF775485246999027B3197955",
+              "projectLink": "https://tether.to/"
+            },
+            "decimalScale": {
+              "_type": "bigint",
+              "_value": "1000000000000000000"
+            }
+          },
+          "outputAmount": {
+            "numerator": {
+              "_type": "bigint",
+              "_value": "1000413663963111218"
+            },
+            "denominator": {
+              "_type": "bigint",
+              "_value": "1"
+            },
+            "currency": {
+              "chainId": 56,
+              "decimals": 18,
+              "symbol": "WBNB",
+              "name": "Wrapped BNB",
+              "isNative": false,
+              "isToken": true,
+              "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+              "projectLink": "https://www.binance.org"
+            },
+            "decimalScale": {
+              "_type": "bigint",
+              "_value": "1000000000000000000"
+            }
+          }
+        }
+      ],
+      "gasEstimate": {
+        "_type": "bigint",
+        "_value": "113000"
+      },
+      "gasEstimateInUSD": {
+        "numerator": {
+          "_type": "bigint",
+          "_value": "72368849234920347"
+        },
+        "denominator": {
+          "_type": "bigint",
+          "_value": "1"
+        },
+        "currency": {
+          "chainId": 56,
+          "decimals": 18,
+          "symbol": "USDT",
+          "name": "Tether USD",
+          "isNative": false,
+          "isToken": true,
+          "address": "0x55d398326f99059fF775485246999027B3197955",
+          "projectLink": "https://tether.to/"
+        },
+        "decimalScale": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        }
+      },
+      "inputAmount": {
+        "numerator": {
+          "_type": "bigint",
+          "_value": "640293386894695380545"
+        },
+        "denominator": {
+          "_type": "bigint",
+          "_value": "1"
+        },
+        "currency": {
+          "chainId": 56,
+          "decimals": 18,
+          "symbol": "USDT",
+          "name": "Tether USD",
+          "isNative": false,
+          "isToken": true,
+          "address": "0x55d398326f99059fF775485246999027B3197955",
+          "projectLink": "https://tether.to/"
+        },
+        "decimalScale": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        }
+      },
+      "outputAmount": {
+        "numerator": {
+          "_type": "bigint",
+          "_value": "1000413663963111218"
+        },
+        "denominator": {
+          "_type": "bigint",
+          "_value": "1"
+        },
+        "currency": {
+          "chainId": 56,
+          "decimals": 18,
+          "symbol": "WBNB",
+          "name": "Wrapped BNB",
+          "isNative": false,
+          "isToken": true,
+          "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+          "projectLink": "https://www.binance.org"
+        },
+        "decimalScale": {
+          "_type": "bigint",
+          "_value": "1000000000000000000"
+        }
+      }
+    }
+  ],
+  "tokenGain": {
+    "numerator": {
+      "_type": "bigint",
+      "_value": "413663963111218"
+    },
+    "denominator": {
+      "_type": "bigint",
+      "_value": "1"
+    },
+    "currency": {
+      "chainId": 56,
+      "decimals": 18,
+      "symbol": "WBNB",
+      "name": "Wrapped BNB",
+      "isNative": false,
+      "isToken": true,
+      "address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+      "projectLink": "https://www.binance.org"
+    },
+    "decimalScale": {
+      "_type": "bigint",
+      "_value": "1000000000000000000"
+    }
+  }
+}
