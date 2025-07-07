@@ -9,5 +9,5 @@ This is part 2 of a demo for arbitrage trading. This part is trying to scan for 
 
 ## Review
 
-The scan take too long to form an attack and perform that before next block is committed. Another approach is implemented in part 3.
+The scan take too long to form an attack and perform that before next block is committed. It is still useful to find potential trade routes. Another approach is implemented in part 3.
 https://github.com/wwboy6/arbitrage-trading2.git
